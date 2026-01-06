@@ -15,6 +15,10 @@ namespace ImobAPI.Context
 
         public DbSet<Usuario> Usuarios { get; set; }
         public DbSet<Cliente> Clientes { get; set; }
+        public DbSet<TipoCliente> TiposCliente { get; set; }
+        public DbSet<TipoImovel> TiposImovel { get; set; }
+        public DbSet<Intencao> Intencoes { get; set; }
+        public DbSet<Imovel> Imoveis { get; set; }
 
     }
 }
