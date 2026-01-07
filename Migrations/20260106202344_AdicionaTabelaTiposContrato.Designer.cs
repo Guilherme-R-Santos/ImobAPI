@@ -4,6 +4,7 @@ using ImobAPI.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ImobAPI.Migrations
 {
     [DbContext(typeof(ImobContext))]
-    partial class ImobContextModelSnapshot : ModelSnapshot
+    [Migration("20260106202344_AdicionaTabelaTiposContrato")]
+    partial class AdicionaTabelaTiposContrato
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -105,107 +108,6 @@ namespace ImobAPI.Migrations
                     b.ToTable("Clientes");
                 });
 
-            modelBuilder.Entity("ImobAPI.Entities.Contrato", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("ApoliceSegFianca")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("Ativo")
-                        .HasColumnType("bit");
-
-                    b.Property<int?>("CadastradorId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("Contratante1Id")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("Contratante2Id")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("Contratante3Id")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("Contratante4Id")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("DataAtualizacao")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("DataCadastro")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("DataFimVigencia")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("DataInativacao")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("DataInicioVigencia")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("FiadorId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("ImovelId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("ModalidadeContratoId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Nome")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("ObjetoContratoId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("PrazoMeses")
-                        .HasColumnType("int");
-
-                    b.Property<string>("PropostaSegFianca")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("ProprietarioId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("TipoContratoId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("Vencimento")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CadastradorId");
-
-                    b.HasIndex("Contratante1Id");
-
-                    b.HasIndex("Contratante2Id");
-
-                    b.HasIndex("Contratante3Id");
-
-                    b.HasIndex("Contratante4Id");
-
-                    b.HasIndex("FiadorId");
-
-                    b.HasIndex("ImovelId");
-
-                    b.HasIndex("ModalidadeContratoId");
-
-                    b.HasIndex("ObjetoContratoId");
-
-                    b.HasIndex("ProprietarioId");
-
-                    b.HasIndex("TipoContratoId");
-
-                    b.ToTable("Contratos");
-                });
-
             modelBuilder.Entity("ImobAPI.Entities.Foto", b =>
                 {
                     b.Property<int>("Id")
@@ -241,16 +143,11 @@ namespace ImobAPI.Migrations
                     b.Property<bool>("Principal")
                         .HasColumnType("bit");
 
-                    b.Property<int?>("TipoFotoId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
                     b.HasIndex("CadastradorId");
 
                     b.HasIndex("ImovelId");
-
-                    b.HasIndex("TipoFotoId");
 
                     b.ToTable("Fotos");
                 });
@@ -384,72 +281,6 @@ namespace ImobAPI.Migrations
                     b.ToTable("Intencoes");
                 });
 
-            modelBuilder.Entity("ImobAPI.Entities.ModalidadeContrato", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<bool>("Ativo")
-                        .HasColumnType("bit");
-
-                    b.Property<int?>("CadastradorId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("DataAtualizacao")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("DataCadastro")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("DataInativacao")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Nome")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CadastradorId");
-
-                    b.ToTable("ModalidadesContrato");
-                });
-
-            modelBuilder.Entity("ImobAPI.Entities.ObjetoContrato", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<bool>("Ativo")
-                        .HasColumnType("bit");
-
-                    b.Property<int?>("CadastradorId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("DataAtualizacao")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("DataCadastro")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("DataInativacao")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Nome")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CadastradorId");
-
-                    b.ToTable("ObjetosContrato");
-                });
-
             modelBuilder.Entity("ImobAPI.Entities.TipoCliente", b =>
                 {
                     b.Property<int>("Id")
@@ -514,39 +345,6 @@ namespace ImobAPI.Migrations
                     b.HasIndex("CadastradorId");
 
                     b.ToTable("TiposContrato");
-                });
-
-            modelBuilder.Entity("ImobAPI.Entities.TipoFoto", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<bool>("Ativo")
-                        .HasColumnType("bit");
-
-                    b.Property<int?>("CadastradorId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("DataAtualizacao")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("DataCadastro")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("DataInativacao")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Nome")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CadastradorId");
-
-                    b.ToTable("TiposFoto");
                 });
 
             modelBuilder.Entity("ImobAPI.Entities.TipoImovel", b =>
@@ -634,75 +432,6 @@ namespace ImobAPI.Migrations
                     b.Navigation("TipoCliente");
                 });
 
-            modelBuilder.Entity("ImobAPI.Entities.Contrato", b =>
-                {
-                    b.HasOne("ImobAPI.Entities.Usuario", "Cadastrador")
-                        .WithMany()
-                        .HasForeignKey("CadastradorId");
-
-                    b.HasOne("ImobAPI.Entities.Cliente", "Contratante1")
-                        .WithMany()
-                        .HasForeignKey("Contratante1Id");
-
-                    b.HasOne("ImobAPI.Entities.Cliente", "Contratante2")
-                        .WithMany()
-                        .HasForeignKey("Contratante2Id");
-
-                    b.HasOne("ImobAPI.Entities.Cliente", "Contratante3")
-                        .WithMany()
-                        .HasForeignKey("Contratante3Id");
-
-                    b.HasOne("ImobAPI.Entities.Cliente", "Contratante4")
-                        .WithMany()
-                        .HasForeignKey("Contratante4Id");
-
-                    b.HasOne("ImobAPI.Entities.Cliente", "Fiador")
-                        .WithMany()
-                        .HasForeignKey("FiadorId");
-
-                    b.HasOne("ImobAPI.Entities.Imovel", "Imovel")
-                        .WithMany()
-                        .HasForeignKey("ImovelId");
-
-                    b.HasOne("ImobAPI.Entities.ModalidadeContrato", "ModalidadeContrato")
-                        .WithMany()
-                        .HasForeignKey("ModalidadeContratoId");
-
-                    b.HasOne("ImobAPI.Entities.ObjetoContrato", "ObjetoContrato")
-                        .WithMany()
-                        .HasForeignKey("ObjetoContratoId");
-
-                    b.HasOne("ImobAPI.Entities.Cliente", "Proprietario")
-                        .WithMany()
-                        .HasForeignKey("ProprietarioId");
-
-                    b.HasOne("ImobAPI.Entities.TipoContrato", "TipoContrato")
-                        .WithMany()
-                        .HasForeignKey("TipoContratoId");
-
-                    b.Navigation("Cadastrador");
-
-                    b.Navigation("Contratante1");
-
-                    b.Navigation("Contratante2");
-
-                    b.Navigation("Contratante3");
-
-                    b.Navigation("Contratante4");
-
-                    b.Navigation("Fiador");
-
-                    b.Navigation("Imovel");
-
-                    b.Navigation("ModalidadeContrato");
-
-                    b.Navigation("ObjetoContrato");
-
-                    b.Navigation("Proprietario");
-
-                    b.Navigation("TipoContrato");
-                });
-
             modelBuilder.Entity("ImobAPI.Entities.Foto", b =>
                 {
                     b.HasOne("ImobAPI.Entities.Usuario", "Cadastrador")
@@ -713,15 +442,9 @@ namespace ImobAPI.Migrations
                         .WithMany()
                         .HasForeignKey("ImovelId");
 
-                    b.HasOne("ImobAPI.Entities.TipoFoto", "TipoFoto")
-                        .WithMany()
-                        .HasForeignKey("TipoFotoId");
-
                     b.Navigation("Cadastrador");
 
                     b.Navigation("Imovel");
-
-                    b.Navigation("TipoFoto");
                 });
 
             modelBuilder.Entity("ImobAPI.Entities.Imovel", b =>
@@ -760,24 +483,6 @@ namespace ImobAPI.Migrations
                     b.Navigation("Cadastrador");
                 });
 
-            modelBuilder.Entity("ImobAPI.Entities.ModalidadeContrato", b =>
-                {
-                    b.HasOne("ImobAPI.Entities.Usuario", "Cadastrador")
-                        .WithMany()
-                        .HasForeignKey("CadastradorId");
-
-                    b.Navigation("Cadastrador");
-                });
-
-            modelBuilder.Entity("ImobAPI.Entities.ObjetoContrato", b =>
-                {
-                    b.HasOne("ImobAPI.Entities.Usuario", "Cadastrador")
-                        .WithMany()
-                        .HasForeignKey("CadastradorId");
-
-                    b.Navigation("Cadastrador");
-                });
-
             modelBuilder.Entity("ImobAPI.Entities.TipoCliente", b =>
                 {
                     b.HasOne("ImobAPI.Entities.Usuario", "Cadastrador")
@@ -788,15 +493,6 @@ namespace ImobAPI.Migrations
                 });
 
             modelBuilder.Entity("ImobAPI.Entities.TipoContrato", b =>
-                {
-                    b.HasOne("ImobAPI.Entities.Usuario", "Cadastrador")
-                        .WithMany()
-                        .HasForeignKey("CadastradorId");
-
-                    b.Navigation("Cadastrador");
-                });
-
-            modelBuilder.Entity("ImobAPI.Entities.TipoFoto", b =>
                 {
                     b.HasOne("ImobAPI.Entities.Usuario", "Cadastrador")
                         .WithMany()

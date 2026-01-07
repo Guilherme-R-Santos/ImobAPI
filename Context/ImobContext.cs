@@ -19,6 +19,11 @@ namespace ImobAPI.Context
         public DbSet<TipoImovel> TiposImovel { get; set; }
         public DbSet<Intencao> Intencoes { get; set; }
         public DbSet<Imovel> Imoveis { get; set; }
-
+        public DbSet<Foto> Fotos { get; set; }
+        public DbSet<TipoContrato> TiposContrato { get; set; }
+        public DbSet<ObjetoContrato> ObjetosContrato { get; set; }
+        public DbSet<ModalidadeContrato> ModalidadesContrato { get; set; }
+        public DbSet<Contrato> Contratos { get; set; }
+        public DbSet<TipoFoto> TiposFoto { get; set; }
     }
 }

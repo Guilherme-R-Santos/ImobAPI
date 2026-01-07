@@ -4,6 +4,7 @@ using ImobAPI.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ImobAPI.Migrations
 {
     [DbContext(typeof(ImobContext))]
-    partial class ImobContextModelSnapshot : ModelSnapshot
+    [Migration("20260107014042_AdicionaTabelaTipoFoto")]
+    partial class AdicionaTabelaTipoFoto
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -241,16 +244,11 @@ namespace ImobAPI.Migrations
                     b.Property<bool>("Principal")
                         .HasColumnType("bit");
 
-                    b.Property<int?>("TipoFotoId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
                     b.HasIndex("CadastradorId");
 
                     b.HasIndex("ImovelId");
-
-                    b.HasIndex("TipoFotoId");
 
                     b.ToTable("Fotos");
                 });
@@ -713,15 +711,9 @@ namespace ImobAPI.Migrations
                         .WithMany()
                         .HasForeignKey("ImovelId");
 
-                    b.HasOne("ImobAPI.Entities.TipoFoto", "TipoFoto")
-                        .WithMany()
-                        .HasForeignKey("TipoFotoId");
-
                     b.Navigation("Cadastrador");
 
                     b.Navigation("Imovel");
-
-                    b.Navigation("TipoFoto");
                 });
 
             modelBuilder.Entity("ImobAPI.Entities.Imovel", b =>
