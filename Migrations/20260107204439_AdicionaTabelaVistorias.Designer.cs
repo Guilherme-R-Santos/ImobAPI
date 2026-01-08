@@ -4,6 +4,7 @@ using ImobAPI.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ImobAPI.Migrations
 {
     [DbContext(typeof(ImobContext))]
-    partial class ImobContextModelSnapshot : ModelSnapshot
+    [Migration("20260107204439_AdicionaTabelaVistorias")]
+    partial class AdicionaTabelaVistorias
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -244,9 +247,6 @@ namespace ImobAPI.Migrations
                     b.Property<int?>("TipoFotoId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("VistoriaId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
                     b.HasIndex("CadastradorId");
@@ -254,8 +254,6 @@ namespace ImobAPI.Migrations
                     b.HasIndex("ImovelId");
 
                     b.HasIndex("TipoFotoId");
-
-                    b.HasIndex("VistoriaId");
 
                     b.ToTable("Fotos");
                 });
@@ -774,17 +772,11 @@ namespace ImobAPI.Migrations
                         .WithMany()
                         .HasForeignKey("TipoFotoId");
 
-                    b.HasOne("ImobAPI.Entities.Vistoria", "Vistoria")
-                        .WithMany()
-                        .HasForeignKey("VistoriaId");
-
                     b.Navigation("Cadastrador");
 
                     b.Navigation("Imovel");
 
                     b.Navigation("TipoFoto");
-
-                    b.Navigation("Vistoria");
                 });
 
             modelBuilder.Entity("ImobAPI.Entities.Imovel", b =>

@@ -20,6 +20,7 @@ namespace ImobAPI.Controllers
             imovel.Cadastrador = _context.Usuarios.Find(imovel.Cadastrador.Id) ?? throw new Exception("Usuário cadastrador não encontrado");
             imovel.TipoImovel = _context.TiposImovel.Find(imovel.TipoImovel.Id) ?? throw new Exception("Tipo de imóvel não encontrado");
             imovel.Intencao = _context.Intencoes.Find(imovel.Intencao.Id) ?? throw new Exception("Intenção não encontrada");
+            imovel.Ativo = true;
             _context.Imoveis.Add(imovel);
             _context.SaveChanges();
             return Ok(imovel);
