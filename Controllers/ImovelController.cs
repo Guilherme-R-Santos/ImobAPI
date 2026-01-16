@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace ImobAPI.Controllers
 {
@@ -15,24 +16,31 @@ namespace ImobAPI.Controllers
         [HttpPost("Criar")]
         public IActionResult Create(Entities.Imovel imovel)
         {
-            imovel.DataCadastro = DateTime.Now;
             imovel.Proprietario = _context.Clientes.Find(imovel.Proprietario.Id) ?? throw new Exception("Cliente proprietário não encontrado");
             imovel.Cadastrador = _context.Usuarios.Find(imovel.Cadastrador.Id) ?? throw new Exception("Usuário cadastrador não encontrado");
             imovel.TipoImovel = _context.TiposImovel.Find(imovel.TipoImovel.Id) ?? throw new Exception("Tipo de imóvel não encontrado");
             imovel.Intencao = _context.Intencoes.Find(imovel.Intencao.Id) ?? throw new Exception("Intenção não encontrada");
+            imovel.Nome = $"{imovel.TipoImovel.Nome} em {imovel.Bairro} - {imovel.Proprietario.Nome}";
+            imovel.DataCadastro = DateTime.Now;
             imovel.Ativo = true;
             _context.Imoveis.Add(imovel);
             _context.SaveChanges();
             return Ok(imovel);
         }
+
         [HttpGet("ObterTodos")]
         public IActionResult GetAll()
         {
             var imoveis = _context.Imoveis
+                .Include(i => i.Proprietario)
+                .Include(i => i.TipoImovel)
+                .Include(i => i.Intencao)
+                .Include(i => i.Cadastrador)
                 .Where(i => i.Ativo)
                 .ToList();
             return Ok(imoveis);
         }
+
         [HttpGet("ObterPorId/{id}")]
         public IActionResult GetById(int id)
         {
@@ -44,6 +52,7 @@ namespace ImobAPI.Controllers
             }
             return Ok(imovel);
         }
+
         [HttpPost("Inativar/{id}")]
         public IActionResult Inactivate(int id)
         {
@@ -58,6 +67,7 @@ namespace ImobAPI.Controllers
             _context.SaveChanges();
             return Ok(imovel);
         }
+
         [HttpGet("ObterPorProprietario/{proprietarioId}")]
         public IActionResult GetByProprietario(int proprietarioId)
         {
@@ -66,6 +76,7 @@ namespace ImobAPI.Controllers
                 .ToList();
             return Ok(imoveis);
         }
+
         [HttpPut("Atualizar/{id}")]
         public IActionResult Update(int id, Entities.Imovel updatedImovel)
         {
