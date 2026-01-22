@@ -86,7 +86,7 @@ namespace ImobAPI.Controllers
             {
                 return NotFound("Imóvel não encontrado");
             }
-            imovel.Nome = updatedImovel.Nome;
+
             imovel.Descricao = updatedImovel.Descricao;
             imovel.Observacao = updatedImovel.Observacao;
             imovel.Cep = updatedImovel.Cep;
