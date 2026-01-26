@@ -104,6 +104,8 @@ namespace ImobAPI.Controllers
             imovel.TaxaIncendio = updatedImovel.TaxaIncendio;
             imovel.Foro = updatedImovel.Foro;
             imovel.DataAtualizacao = DateTime.Now;
+            imovel.InscricaoIptu = updatedImovel.InscricaoIptu;
+            imovel.NumeroCbmerj = updatedImovel.NumeroCbmerj;
             _context.SaveChanges();
             return Ok(imovel);
         }
