@@ -36,9 +36,13 @@ namespace ImobAPI.Controllers
             var fotos = _context.Fotos.Where(f => f.Imovel.Id == imovelId && f.Ativo).ToList();
             return Ok(fotos);
         }
-        [HttpPut("Inativar/{fotoId}")]
-        public IActionResult GetById(int id) {
-            var foto = _context.Fotos.Find(id) ?? throw new Exception("Foto não encontrada");
+        [HttpPut("Inativar/{id}")]
+        public IActionResult Inativar(int id) {
+            var foto = _context.Fotos.FirstOrDefault(i => i.Id == id && i.Ativo);
+            if (foto == null)
+            {
+                return BadRequest("Foto não encontrada");
+            }
             foto.Ativo = false;
             foto.DataInativacao = DateTime.Now;
             foto.DataAtualizacao = DateTime.Now;
