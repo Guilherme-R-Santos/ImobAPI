@@ -55,6 +55,14 @@ namespace ImobAPI.Controllers
             }
             return Ok(existingCliente);
         }
+
+        [HttpGet("ObterPorTipo/{tipoId}")]
+        public IActionResult GetByTipo(int tipoId)
+        {
+            var clientes = _context.Clientes.Where(c => c.TipoCliente.Id == tipoId && c.Ativo).ToList();
+            return Ok(clientes);
+        }
+
         [HttpPut("Inativar/{id}")]
         public IActionResult Inactivate(int id)
         {
@@ -98,6 +106,5 @@ namespace ImobAPI.Controllers
             _context.SaveChanges();
             return Ok(existingCliente);
         }
-
     }
 }

@@ -30,7 +30,7 @@ namespace ImobAPI.Controllers
         [HttpGet("ListarTipos")]
         public IActionResult GetAll()
         {
-            var tiposCliente = _context.TiposCliente.ToList();
+            var tiposCliente = _context.TiposCliente.Where(tc => tc.Ativo).ToList();
             return Ok(tiposCliente);
         }
         [HttpGet("ObterTipo/{id}")]
