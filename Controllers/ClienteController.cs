@@ -85,10 +85,23 @@ namespace ImobAPI.Controllers
             {
                 return NotFound("Cliente não encontrado.");
             }
+            existingCliente.TipoCliente = _context.TiposCliente.Find(updatedCliente.TipoCliente.Id) ?? throw new Exception("Tipo de cliente não encontrado");
             existingCliente.Nome = updatedCliente.Nome;
+            existingCliente.CpfCnpj = updatedCliente.CpfCnpj;
+            existingCliente.Identidade = updatedCliente.Identidade;
+            existingCliente.OrgaoExpedidor = updatedCliente.OrgaoExpedidor;
+            existingCliente.Nacionalidade = updatedCliente.Nacionalidade;
+            existingCliente.Naturalidade = updatedCliente.Naturalidade;
+            existingCliente.EstadoCivil = updatedCliente.EstadoCivil;
+            existingCliente.Profissao = updatedCliente.Profissao;
+            existingCliente.Endereco = updatedCliente.Endereco;
+            existingCliente.Agencia = updatedCliente.Agencia;
+            existingCliente.Conta = updatedCliente.Conta;
+            existingCliente.CodBanco = updatedCliente.CodBanco;
+            existingCliente.Banco = updatedCliente.Banco;
             existingCliente.Email = updatedCliente.Email;
             existingCliente.Telefone = updatedCliente.Telefone;
-            existingCliente.TipoCliente = _context.TiposCliente.Find(updatedCliente.TipoCliente.Id) ?? throw new Exception("Tipo de cliente não encontrado");
+            existingCliente.DataNascimento = updatedCliente.DataNascimento;
             existingCliente.DataAtualizacao = DateTime.Now;
             _context.SaveChanges();
             return Ok(existingCliente);
