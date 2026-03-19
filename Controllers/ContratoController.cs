@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace ImobAPI.Controllers
 {
@@ -39,14 +40,39 @@ namespace ImobAPI.Controllers
         [HttpGet("ObterTodos")]
         public IActionResult GetAll()
         {
-            var contratos = _context.Contratos.Where(c => c.Ativo).ToList();
+            var contratos = _context.Contratos
+                .Include(c => c.Cadastrador)
+                .Include(c => c.TipoContrato)
+                .Include(c => c.Proprietario)
+                .Include(c => c.Contratante1)
+                .Include(c => c.Contratante2)
+                .Include(c => c.Contratante3)
+                .Include(c => c.Contratante4)
+                .Include(c => c.Fiador)
+                .Include(c => c.Imovel)
+                .Include(c => c.ObjetoContrato)
+                .Include(c => c.ModalidadeContrato)
+                .Where(c => c.Ativo).ToList();
             return Ok(contratos);
         }
         [HttpGet("ObterPorId/{id}")]
         public IActionResult GetById(int id)
         {
-            var existingContrato = _context.Contratos.Find(id);
-            if (existingContrato == null || existingContrato.Ativo == false)
+            var existingContrato = _context.Contratos
+                .Include(c => c.Cadastrador)
+                .Include(c => c.TipoContrato)
+                .Include(c => c.Proprietario)
+                .Include(c => c.Contratante1)
+                .Include(c => c.Contratante2)
+                .Include(c => c.Contratante3)
+                .Include(c => c.Contratante4)
+                .Include(c => c.Fiador)
+                .Include(c => c.Imovel)
+                .Include(c => c.ObjetoContrato)
+                .Include(c => c.ModalidadeContrato)
+                .FirstOrDefault(c => c.Id == id && c.Ativo);
+
+            if (existingContrato == null)
             {
                 return NotFound("Contrato não encontrado.");
             }
@@ -115,6 +141,13 @@ namespace ImobAPI.Controllers
             existingContrato.Imovel = _context.Imoveis.Find(contrato.Imovel.Id) ?? throw new Exception("Imóvel não encontrado");
             existingContrato.ObjetoContrato = _context.ObjetosContrato.Find(contrato.ObjetoContrato.Id) ?? throw new Exception("Objeto do contrato não encontrado");
             existingContrato.ModalidadeContrato = _context.ModalidadesContrato.Find(contrato.ModalidadeContrato.Id) ?? throw new Exception("Modalidade do contrato não encontrada");
+            existingContrato.PrazoMeses = contrato.PrazoMeses;
+            existingContrato.Vencimento = contrato.Vencimento;
+            existingContrato.DataFimVigencia = contrato.DataFimVigencia;
+            existingContrato.PropostaSegFianca = contrato.PropostaSegFianca;
+            existingContrato.ApoliceSegFianca = contrato.ApoliceSegFianca;
+            existingContrato.DataInicioVigencia = contrato.DataInicioVigencia;
+            existingContrato.Nome = contrato.Nome;
             existingContrato.DataAtualizacao = DateTime.Now;
             _context.SaveChanges();
             return Ok(existingContrato);
