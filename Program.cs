@@ -10,7 +10,159 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddDbContext<ImobContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("ConexaoPadrao")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("ConexaoPadrao"))
+    .UseSeeding((Context, _) =>
+     {
+         var imobContext = (ImobContext)Context;
+         if (!imobContext.Usuarios.Any())
+         {
+             imobContext.Usuarios.Add(new ImobAPI.Entities.Usuario
+             {
+                 Nome = "Admin",
+                 Login = "admin",
+                 Email = "",
+                 Senha = "admin",
+                 Ativo = true,
+                 DataCadastro = DateTime.Now
+             });
+             imobContext.SaveChanges();
+         }
+         if (!imobContext.TiposCliente.Any())
+         {
+             imobContext.TiposCliente.Add(new ImobAPI.Entities.TipoCliente
+             {
+                 Nome = "PF",
+                 Ativo = true,
+                 DataCadastro = DateTime.Now
+             });
+             imobContext.TiposCliente.Add(new ImobAPI.Entities.TipoCliente
+             {
+                 Nome = "PJ",
+                 Ativo = true,
+                 DataCadastro = DateTime.Now
+             });
+             imobContext.SaveChanges();
+         }
+         if (!imobContext.TiposImovel.Any())
+         {
+             imobContext.TiposImovel.Add(new ImobAPI.Entities.TipoImovel
+             {
+                 Nome = "Comercial",
+                 Ativo = true,
+                 DataCadastro = DateTime.Now
+             });
+             imobContext.TiposImovel.Add(new ImobAPI.Entities.TipoImovel
+             {
+                 Nome = "Residencial",
+                 Ativo = true,
+                 DataCadastro = DateTime.Now
+             });
+             imobContext.TiposImovel.Add(new ImobAPI.Entities.TipoImovel
+             {
+                 Nome = "Misto",
+                 Ativo = true,
+                 DataCadastro = DateTime.Now
+             });
+             imobContext.SaveChanges();
+         }
+         if (!imobContext.Intencoes.Any())
+         {
+             imobContext.Intencoes.Add(new ImobAPI.Entities.Intencao
+             {
+                 Nome = "Venda",
+                 Ativo = true,
+                 DataCadastro = DateTime.Now
+             });
+             imobContext.Intencoes.Add(new ImobAPI.Entities.Intencao
+             {
+                 Nome = "Locação",
+                 Ativo = true,
+                 DataCadastro = DateTime.Now
+             });
+             imobContext.Intencoes.Add(new ImobAPI.Entities.Intencao
+             {
+                 Nome = "Venda/Locação",
+                 Ativo = true,
+                 DataCadastro = DateTime.Now
+             });
+             imobContext.SaveChanges();
+         }
+         if(!imobContext.TiposFoto.Any())
+         {
+             imobContext.TiposFoto.Add(new ImobAPI.Entities.TipoFoto
+             {
+                 Nome = "Anúncio",
+                 Ativo = true,
+                 DataCadastro = DateTime.Now
+             });
+             imobContext.TiposFoto.Add(new ImobAPI.Entities.TipoFoto
+             {
+                 Nome = "Vistoria",
+                 Ativo = true,
+                 DataCadastro = DateTime.Now
+             });
+         }
+         if(!imobContext.TiposContrato.Any())
+         {
+             imobContext.TiposContrato.Add(new ImobAPI.Entities.TipoContrato
+             {
+                 Nome = "Compra/Venda",
+                 Ativo = true,
+                 DataCadastro = DateTime.Now
+             });
+             imobContext.TiposContrato.Add(new ImobAPI.Entities.TipoContrato
+             {
+                 Nome = "Locação",
+                 Ativo = true,
+                 DataCadastro = DateTime.Now
+             });
+             imobContext.SaveChanges();
+         }
+         if(!imobContext.ObjetosContrato.Any())
+         {
+             imobContext.ObjetosContrato.Add(new ImobAPI.Entities.ObjetoContrato
+             {
+                 Nome = "Comercial",
+                 Ativo = true,
+                 DataCadastro = DateTime.Now
+             });
+             imobContext.ObjetosContrato.Add(new ImobAPI.Entities.ObjetoContrato
+             {
+                 Nome = "Residencial",
+                 Ativo = true,
+                 DataCadastro = DateTime.Now
+             });
+             imobContext.SaveChanges();
+         }
+         if(!imobContext.ModalidadesContrato.Any())
+         {
+             imobContext.ModalidadesContrato.Add(new ImobAPI.Entities.ModalidadeContrato
+             {
+                 Nome = "Caução",
+                 Ativo = true,
+                 DataCadastro = DateTime.Now
+             });
+             imobContext.ModalidadesContrato.Add(new ImobAPI.Entities.ModalidadeContrato
+             {
+                 Nome = "Depósito",
+                 Ativo = true,
+                 DataCadastro = DateTime.Now
+             });
+             imobContext.ModalidadesContrato.Add(new ImobAPI.Entities.ModalidadeContrato
+             {
+                 Nome = "Fiador",
+                 Ativo = true,
+                 DataCadastro = DateTime.Now
+             });
+             imobContext.ModalidadesContrato.Add(new ImobAPI.Entities.ModalidadeContrato
+             {
+                 Nome = "Seguro Fiança",
+                 Ativo = true,
+                 DataCadastro = DateTime.Now
+             });
+             imobContext.SaveChanges();
+         }
+     }));
 
 builder.Services.AddControllers();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

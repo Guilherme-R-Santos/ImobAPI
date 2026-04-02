@@ -613,6 +613,9 @@ namespace ImobAPI.Migrations
                     b.Property<DateTime?>("DataInativacao")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("Email")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Login")
                         .HasColumnType("nvarchar(max)");
 
@@ -620,9 +623,6 @@ namespace ImobAPI.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Senha")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("email")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
