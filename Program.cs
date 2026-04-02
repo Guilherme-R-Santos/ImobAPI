@@ -5,6 +5,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using System.Text;
+using BCrypt.Net;
+using static BCrypt.Net.BCrypt;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,7 +23,7 @@ builder.Services.AddDbContext<ImobContext>(options =>
                  Nome = "Admin",
                  Login = "admin",
                  Email = "",
-                 Senha = "admin",
+                 Senha = HashPassword("admin", 12),
                  Ativo = true,
                  DataCadastro = DateTime.Now
              });
