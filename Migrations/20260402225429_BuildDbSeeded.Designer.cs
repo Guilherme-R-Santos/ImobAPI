@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ImobAPI.Migrations
 {
     [DbContext(typeof(ImobContext))]
-    [Migration("20260402182003_BuildDbSeeded")]
+    [Migration("20260402225429_BuildDbSeeded")]
     partial class BuildDbSeeded
     {
         /// <inheritdoc />

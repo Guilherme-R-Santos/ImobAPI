@@ -33,13 +33,19 @@ builder.Services.AddDbContext<ImobContext>(options =>
          {
              imobContext.TiposCliente.Add(new ImobAPI.Entities.TipoCliente
              {
-                 Nome = "PF",
+                 Nome = "Proprietário",
                  Ativo = true,
                  DataCadastro = DateTime.Now
              });
              imobContext.TiposCliente.Add(new ImobAPI.Entities.TipoCliente
              {
-                 Nome = "PJ",
+                 Nome = "Fiador",
+                 Ativo = true,
+                 DataCadastro = DateTime.Now
+             });
+             imobContext.TiposCliente.Add(new ImobAPI.Entities.TipoCliente
+             {
+                 Nome = "Locatário",
                  Ativo = true,
                  DataCadastro = DateTime.Now
              });
