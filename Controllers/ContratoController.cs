@@ -13,6 +13,44 @@ namespace ImobAPI.Controllers
         {
             _context = context;
         }
+
+        private IQueryable<Entities.Contrato> ContratosComIncludes()
+        {
+            return _context.Contratos
+                .Include(c => c.Cadastrador)
+                .Include(c => c.TipoContrato)
+                .Include(c => c.Proprietario)
+                .Include(c => c.Proprietario)
+                    .ThenInclude(p => p.TipoCliente)
+                .Include(c => c.Contratante1)
+                .Include(c => c.Contratante1)
+                    .ThenInclude(c1 => c1.TipoCliente)
+                .Include(c => c.Contratante2)
+                .Include(c => c.Contratante2)
+                    .ThenInclude(c2 => c2.TipoCliente)
+                .Include(c => c.Contratante3)
+                .Include(c => c.Contratante3)
+                    .ThenInclude(c3 => c3.TipoCliente)
+                .Include(c => c.Contratante4)
+                .Include(c => c.Contratante4)
+                    .ThenInclude(c4 => c4.TipoCliente)
+                .Include(c => c.Fiador)
+                .Include(c => c.Fiador)
+                    .ThenInclude(f => f.TipoCliente)
+                .Include(c => c.Imovel)
+                .Include(c => c.Imovel)
+                    .ThenInclude(i => i.TipoImovel)
+                .Include(c => c.Imovel)
+                    .ThenInclude(i => i.Intencao)
+                .Include(c => c.Imovel)
+                    .ThenInclude(i => i.Proprietario)
+                .Include(c => c.Imovel)
+                    .ThenInclude(i => i.Proprietario)
+                        .ThenInclude(p => p.TipoCliente)
+                .Include(c => c.ObjetoContrato)
+                .Include(c => c.ModalidadeContrato);
+        }
+
         [HttpPost("Criar")]
         public IActionResult Create(Entities.Contrato contrato)
         {
@@ -40,36 +78,14 @@ namespace ImobAPI.Controllers
         [HttpGet("ObterTodos")]
         public IActionResult GetAll()
         {
-            var contratos = _context.Contratos
-                .Include(c => c.Cadastrador)
-                .Include(c => c.TipoContrato)
-                .Include(c => c.Proprietario)
-                .Include(c => c.Contratante1)
-                .Include(c => c.Contratante2)
-                .Include(c => c.Contratante3)
-                .Include(c => c.Contratante4)
-                .Include(c => c.Fiador)
-                .Include(c => c.Imovel)
-                .Include(c => c.ObjetoContrato)
-                .Include(c => c.ModalidadeContrato)
+            var contratos = ContratosComIncludes()
                 .Where(c => c.Ativo).ToList();
             return Ok(contratos);
         }
         [HttpGet("ObterPorId/{id}")]
         public IActionResult GetById(int id)
         {
-            var existingContrato = _context.Contratos
-                .Include(c => c.Cadastrador)
-                .Include(c => c.TipoContrato)
-                .Include(c => c.Proprietario)
-                .Include(c => c.Contratante1)
-                .Include(c => c.Contratante2)
-                .Include(c => c.Contratante3)
-                .Include(c => c.Contratante4)
-                .Include(c => c.Fiador)
-                .Include(c => c.Imovel)
-                .Include(c => c.ObjetoContrato)
-                .Include(c => c.ModalidadeContrato)
+            var existingContrato = ContratosComIncludes()
                 .FirstOrDefault(c => c.Id == id && c.Ativo);
 
             if (existingContrato == null)
@@ -81,7 +97,7 @@ namespace ImobAPI.Controllers
         [HttpGet("ObterPorProprietario/{proprietarioId}")]
         public IActionResult GetByProprietario(int proprietarioId)
         {
-            var contratos = _context.Contratos
+            var contratos = ContratosComIncludes()
                 .Where(c => c.Proprietario.Id == proprietarioId && c.Ativo)
                 .ToList();
             return Ok(contratos);
@@ -89,7 +105,7 @@ namespace ImobAPI.Controllers
         [HttpGet("ObterPorContratante/{contratanteId}")]
         public IActionResult GetByContratante(int contratanteId)
         {
-            var contratos = _context.Contratos
+            var contratos = ContratosComIncludes()
                 .Where(c => (c.Contratante1.Id == contratanteId ||
                              (c.Contratante2 != null && c.Contratante2.Id == contratanteId) ||
                              (c.Contratante3 != null && c.Contratante3.Id == contratanteId) ||
