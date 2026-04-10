@@ -33,7 +33,6 @@ namespace ImobAPI.Controllers
             return Ok("Conexão estabelecida com sucesso!");
         }
 
-        [AllowAnonymous]
         [HttpPost("Criar")]
         public IActionResult Create(Entities.Usuario usuario)
         {
