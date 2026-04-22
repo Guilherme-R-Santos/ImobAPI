@@ -98,7 +98,8 @@ namespace ImobAPI.Controllers
             imovel.Pais = updatedImovel.Pais;
             imovel.Complemento = updatedImovel.Complemento;
             imovel.Metragem = updatedImovel.Metragem;
-            imovel.Valor = updatedImovel.Valor;
+            imovel.ValorLocacao = updatedImovel.ValorLocacao;
+            imovel.ValorVenda = updatedImovel.ValorVenda;
             imovel.Condominio = updatedImovel.Condominio;
             imovel.Iptu = updatedImovel.Iptu;
             imovel.TaxaIncendio = updatedImovel.TaxaIncendio;

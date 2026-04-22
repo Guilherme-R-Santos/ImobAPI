@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace ImobAPI.Migrations
 {
     /// <inheritdoc />
-    public partial class BuildDbSeeded : Migration
+    public partial class BuildDb : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -260,7 +260,8 @@ namespace ImobAPI.Migrations
                     InscricaoIptu = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     NumeroCbmerj = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Metragem = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    Valor = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    ValorLocacao = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    ValorVenda = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     Condominio = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     Iptu = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     TaxaIncendio = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
@@ -303,6 +304,7 @@ namespace ImobAPI.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Nome = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Ativo = table.Column<bool>(type: "bit", nullable: false),
+                    ValorContrato = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     CadastradorId = table.Column<int>(type: "int", nullable: true),
                     TipoContratoId = table.Column<int>(type: "int", nullable: true),
                     ProprietarioId = table.Column<int>(type: "int", nullable: true),

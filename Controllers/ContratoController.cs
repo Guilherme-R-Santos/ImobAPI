@@ -164,6 +164,7 @@ namespace ImobAPI.Controllers
             existingContrato.ApoliceSegFianca = contrato.ApoliceSegFianca;
             existingContrato.DataInicioVigencia = contrato.DataInicioVigencia;
             existingContrato.Nome = contrato.Nome;
+            existingContrato.ValorContrato = contrato.ValorContrato;
             existingContrato.DataAtualizacao = DateTime.Now;
             _context.SaveChanges();
             return Ok(existingContrato);

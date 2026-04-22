@@ -176,6 +176,9 @@ namespace ImobAPI.Migrations
                     b.Property<int?>("TipoContratoId")
                         .HasColumnType("int");
 
+                    b.Property<decimal>("ValorContrato")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<int>("Vencimento")
                         .HasColumnType("int");
 
@@ -346,7 +349,10 @@ namespace ImobAPI.Migrations
                     b.Property<int?>("TipoImovelId")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("Valor")
+                    b.Property<decimal>("ValorLocacao")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("ValorVenda")
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");

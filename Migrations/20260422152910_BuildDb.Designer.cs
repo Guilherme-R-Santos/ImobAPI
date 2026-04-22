@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ImobAPI.Migrations
 {
     [DbContext(typeof(ImobContext))]
-    [Migration("20260402225429_BuildDbSeeded")]
-    partial class BuildDbSeeded
+    [Migration("20260422152910_BuildDb")]
+    partial class BuildDb
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -178,6 +178,9 @@ namespace ImobAPI.Migrations
 
                     b.Property<int?>("TipoContratoId")
                         .HasColumnType("int");
+
+                    b.Property<decimal>("ValorContrato")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("Vencimento")
                         .HasColumnType("int");
@@ -349,7 +352,10 @@ namespace ImobAPI.Migrations
                     b.Property<int?>("TipoImovelId")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("Valor")
+                    b.Property<decimal>("ValorLocacao")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("ValorVenda")
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
