@@ -16,6 +16,7 @@
         public string Endereco { get; set; }
         public string Agencia { get; set; }
         public string Conta { get; set; }
+        public string ChavePix { get; set; }
         public string CodBanco { get; set; }
         public string Banco { get; set; }
         public string Email { get; set; }

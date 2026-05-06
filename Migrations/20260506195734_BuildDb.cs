@@ -211,6 +211,7 @@ namespace ImobAPI.Migrations
                     Endereco = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Agencia = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Conta = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ChavePix = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CodBanco = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Banco = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Email = table.Column<string>(type: "nvarchar(max)", nullable: true),

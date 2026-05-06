@@ -42,6 +42,9 @@ namespace ImobAPI.Migrations
                     b.Property<int?>("CadastradorId")
                         .HasColumnType("int");
 
+                    b.Property<string>("ChavePix")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("CodBanco")
                         .HasColumnType("nvarchar(max)");
 

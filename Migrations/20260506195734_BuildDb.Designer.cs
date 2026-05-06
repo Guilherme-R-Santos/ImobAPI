@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ImobAPI.Migrations
 {
     [DbContext(typeof(ImobContext))]
-    [Migration("20260422152910_BuildDb")]
+    [Migration("20260506195734_BuildDb")]
     partial class BuildDb
     {
         /// <inheritdoc />
@@ -44,6 +44,9 @@ namespace ImobAPI.Migrations
 
                     b.Property<int?>("CadastradorId")
                         .HasColumnType("int");
+
+                    b.Property<string>("ChavePix")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("CodBanco")
                         .HasColumnType("nvarchar(max)");
