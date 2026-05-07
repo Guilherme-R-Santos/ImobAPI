@@ -97,6 +97,7 @@ namespace ImobAPI.Controllers
             existingCliente.Endereco = updatedCliente.Endereco;
             existingCliente.Agencia = updatedCliente.Agencia;
             existingCliente.Conta = updatedCliente.Conta;
+            existingCliente.ChavePix = updatedCliente.ChavePix;
             existingCliente.CodBanco = updatedCliente.CodBanco;
             existingCliente.Banco = updatedCliente.Banco;
             existingCliente.Email = updatedCliente.Email;
