@@ -72,7 +72,7 @@ namespace ImobAPI.Controllers
         [HttpGet("ObterPorNome/{nome}")]
         public IActionResult GetPorNome(string nome)
         {
-            var existingIntencao = _context.Intencoes.FirstOrDefault(i => i.Nome == nome && i.Ativo);
+            var existingIntencao = _context.Intencoes.FirstOrDefault(i => i.Nome.Equals(Uri.UnescapeDataString(nome)) && i.Ativo);
             if (existingIntencao == null)
             {
                 return NotFound("Intenção não encontrada.");
