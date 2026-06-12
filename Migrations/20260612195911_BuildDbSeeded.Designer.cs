@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ImobAPI.Migrations
 {
     [DbContext(typeof(ImobContext))]
-    [Migration("20260612162103_BuildDbSeeded")]
+    [Migration("20260612195911_BuildDbSeeded")]
     partial class BuildDbSeeded
     {
         /// <inheritdoc />
@@ -155,6 +155,9 @@ namespace ImobAPI.Migrations
                     b.Property<DateTime?>("DataInicioVigencia")
                         .HasColumnType("datetime2");
 
+                    b.Property<int?>("Fiador2Id")
+                        .HasColumnType("int");
+
                     b.Property<int?>("FiadorId")
                         .HasColumnType("int");
 
@@ -199,6 +202,8 @@ namespace ImobAPI.Migrations
                     b.HasIndex("Contratante3Id");
 
                     b.HasIndex("Contratante4Id");
+
+                    b.HasIndex("Fiador2Id");
 
                     b.HasIndex("FiadorId");
 
@@ -802,6 +807,10 @@ namespace ImobAPI.Migrations
                         .WithMany()
                         .HasForeignKey("Contratante4Id");
 
+                    b.HasOne("ImobAPI.Entities.Cliente", "Fiador2")
+                        .WithMany()
+                        .HasForeignKey("Fiador2Id");
+
                     b.HasOne("ImobAPI.Entities.Cliente", "Fiador")
                         .WithMany()
                         .HasForeignKey("FiadorId");
@@ -837,6 +846,8 @@ namespace ImobAPI.Migrations
                     b.Navigation("Contratante4");
 
                     b.Navigation("Fiador");
+
+                    b.Navigation("Fiador2");
 
                     b.Navigation("Imovel");
 

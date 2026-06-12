@@ -366,6 +366,7 @@ namespace ImobAPI.Migrations
                     Contratante3Id = table.Column<int>(type: "int", nullable: true),
                     Contratante4Id = table.Column<int>(type: "int", nullable: true),
                     FiadorId = table.Column<int>(type: "int", nullable: true),
+                    Fiador2Id = table.Column<int>(type: "int", nullable: true),
                     ImovelId = table.Column<int>(type: "int", nullable: true),
                     ObjetoContratoId = table.Column<int>(type: "int", nullable: true),
                     ModalidadeContratoId = table.Column<int>(type: "int", nullable: true),
@@ -400,6 +401,11 @@ namespace ImobAPI.Migrations
                     table.ForeignKey(
                         name: "FK_Contratos_Clientes_Contratante4Id",
                         column: x => x.Contratante4Id,
+                        principalTable: "Clientes",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Contratos_Clientes_Fiador2Id",
+                        column: x => x.Fiador2Id,
                         principalTable: "Clientes",
                         principalColumn: "Id");
                     table.ForeignKey(
@@ -554,6 +560,11 @@ namespace ImobAPI.Migrations
                 name: "IX_Contratos_Contratante4Id",
                 table: "Contratos",
                 column: "Contratante4Id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Contratos_Fiador2Id",
+                table: "Contratos",
+                column: "Fiador2Id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Contratos_FiadorId",

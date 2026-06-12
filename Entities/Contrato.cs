@@ -14,6 +14,7 @@
         public Cliente Contratante3 { get; set; }
         public Cliente Contratante4 { get; set; }
         public Cliente Fiador { get; set; }
+        public Cliente Fiador2 { get; set; }
         public Imovel Imovel { get; set; }
         public ObjetoContrato ObjetoContrato { get; set; }
         public ModalidadeContrato ModalidadeContrato { get; set; }

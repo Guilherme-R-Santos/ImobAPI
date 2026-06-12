@@ -36,6 +36,7 @@ namespace ImobAPI.Controllers
                     .ThenInclude(c4 => c4.TipoCliente)
                 .Include(c => c.Fiador)
                 .Include(c => c.Fiador)
+                .Include(c => c.Fiador2)
                     .ThenInclude(f => f.TipoCliente)
                 .Include(c => c.Imovel)
                 .Include(c => c.Imovel)
@@ -66,6 +67,8 @@ namespace ImobAPI.Controllers
                 contrato.Contratante4 = _context.Clientes.Find(contrato.Contratante4.Id) ?? throw new Exception("Contratante 4 não encontrado");
             if (contrato.Fiador != null)
                 contrato.Fiador = _context.Clientes.Find(contrato.Fiador.Id) ?? throw new Exception("Fiador não encontrado");
+            if (contrato.Fiador2 != null)
+                contrato.Fiador2 = _context.Clientes.Find(contrato.Fiador2.Id) ?? throw new Exception("Fiador 2 não encontrado");
             contrato.Imovel = _context.Imoveis.Find(contrato.Imovel.Id) ?? throw new Exception("Imóvel não encontrado");
             contrato.ObjetoContrato = _context.ObjetosContrato.Find(contrato.ObjetoContrato.Id) ?? throw new Exception("Objeto do contrato não encontrado");
             contrato.ModalidadeContrato = _context.ModalidadesContrato.Find(contrato.ModalidadeContrato.Id) ?? throw new Exception("Modalidade do contrato não encontrada");
@@ -154,6 +157,10 @@ namespace ImobAPI.Controllers
                 existingContrato.Fiador = _context.Clientes.Find(contrato.Fiador.Id) ?? throw new Exception("Fiador não encontrado");
             else
                 existingContrato.Fiador = null;
+            if (contrato.Fiador2 != null)
+                existingContrato.Fiador2 = _context.Clientes.Find(contrato.Fiador2.Id) ?? throw new Exception("Fiador 2 não encontrado");
+            else
+                existingContrato.Fiador2 = null;
             existingContrato.Imovel = _context.Imoveis.Find(contrato.Imovel.Id) ?? throw new Exception("Imóvel não encontrado");
             existingContrato.ObjetoContrato = _context.ObjetosContrato.Find(contrato.ObjetoContrato.Id) ?? throw new Exception("Objeto do contrato não encontrado");
             existingContrato.ModalidadeContrato = _context.ModalidadesContrato.Find(contrato.ModalidadeContrato.Id) ?? throw new Exception("Modalidade do contrato não encontrada");
