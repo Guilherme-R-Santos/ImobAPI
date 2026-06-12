@@ -7,6 +7,7 @@ using Microsoft.OpenApi;
 using System.Text;
 using BCrypt.Net;
 using static BCrypt.Net.BCrypt;
+using ImobAPI.Entities;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,11 +17,29 @@ builder.Services.AddDbContext<ImobContext>(options =>
     .UseSeeding((Context, _) =>
      {
          var imobContext = (ImobContext)Context;
+         if (!imobContext.TiposUsuario.Any())
+         {
+             imobContext.TiposUsuario.Add(new ImobAPI.Entities.TipoUsuario
+             {
+                 Nome = "Administrador",
+                 Ativo = true,
+                 DataCadastro = DateTime.Now
+             });
+             imobContext.TiposUsuario.Add(new ImobAPI.Entities.TipoUsuario
+             {
+                 Nome = "Corretor",
+                 Ativo = true,
+                 DataCadastro = DateTime.Now
+             });
+             imobContext.SaveChanges();
+         }
          if (!imobContext.Usuarios.Any())
          {
+             var adminTipo = imobContext.TiposUsuario.FirstOrDefault(t => t.Nome == "Administrador");
              imobContext.Usuarios.Add(new ImobAPI.Entities.Usuario
              {
                  Nome = "Admin",
+                 Tipo = adminTipo,
                  Login = "admin",
                  Email = "",
                  Senha = HashPassword("admin", 12),

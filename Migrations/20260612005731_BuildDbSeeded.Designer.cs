@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ImobAPI.Migrations
 {
     [DbContext(typeof(ImobContext))]
-    [Migration("20260506195734_BuildDb")]
-    partial class BuildDb
+    [Migration("20260612005731_BuildDbSeeded")]
+    partial class BuildDbSeeded
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -605,6 +605,34 @@ namespace ImobAPI.Migrations
                     b.ToTable("TiposImovel");
                 });
 
+            modelBuilder.Entity("ImobAPI.Entities.TipoUsuario", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Ativo")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("DataAtualizacao")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DataCadastro")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DataInativacao")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Nome")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("TiposUsuario");
+                });
+
             modelBuilder.Entity("ImobAPI.Entities.Usuario", b =>
                 {
                     b.Property<int>("Id")
@@ -637,7 +665,12 @@ namespace ImobAPI.Migrations
                     b.Property<string>("Senha")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("TipoId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("TipoId");
 
                     b.ToTable("Usuarios");
                 });
@@ -893,6 +926,15 @@ namespace ImobAPI.Migrations
                         .HasForeignKey("CadastradorId");
 
                     b.Navigation("Cadastrador");
+                });
+
+            modelBuilder.Entity("ImobAPI.Entities.Usuario", b =>
+                {
+                    b.HasOne("ImobAPI.Entities.TipoUsuario", "Tipo")
+                        .WithMany()
+                        .HasForeignKey("TipoId");
+
+                    b.Navigation("Tipo");
                 });
 
             modelBuilder.Entity("ImobAPI.Entities.Vistoria", b =>

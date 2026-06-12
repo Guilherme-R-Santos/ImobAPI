@@ -6,17 +6,35 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace ImobAPI.Migrations
 {
     /// <inheritdoc />
-    public partial class BuildDb : Migration
+    public partial class BuildDbSeeded : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.CreateTable(
+                name: "TiposUsuario",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Nome = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Ativo = table.Column<bool>(type: "bit", nullable: false),
+                    DataCadastro = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    DataAtualizacao = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    DataInativacao = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TiposUsuario", x => x.Id);
+                });
+
             migrationBuilder.CreateTable(
                 name: "Usuarios",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
+                    TipoId = table.Column<int>(type: "int", nullable: true),
                     Nome = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Login = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Email = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -29,6 +47,11 @@ namespace ImobAPI.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Usuarios", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Usuarios_TiposUsuario_TipoId",
+                        column: x => x.TipoId,
+                        principalTable: "TiposUsuario",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -609,6 +632,11 @@ namespace ImobAPI.Migrations
                 column: "CadastradorId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Usuarios_TipoId",
+                table: "Usuarios",
+                column: "TipoId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Vistorias_CadastradorId",
                 table: "Vistorias",
                 column: "CadastradorId");
@@ -665,6 +693,9 @@ namespace ImobAPI.Migrations
 
             migrationBuilder.DropTable(
                 name: "Usuarios");
+
+            migrationBuilder.DropTable(
+                name: "TiposUsuario");
         }
     }
 }
