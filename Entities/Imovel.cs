@@ -9,6 +9,7 @@
         public string Observacao { get; set; }
         public Cliente Proprietario { get; set; }
         public TipoImovel TipoImovel { get; set; }
+        public Finalidade Finalidade { get; set; }
         public Intencao Intencao { get; set; }
         public string Cep { get; set; }
         public string Logradouro { get; set; }

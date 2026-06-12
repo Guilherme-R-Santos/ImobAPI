@@ -55,6 +55,29 @@ namespace ImobAPI.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Finalidades",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Nome = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Ativo = table.Column<bool>(type: "bit", nullable: false),
+                    DataCadastro = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    DataAtualizacao = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DataInativacao = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CadastradorId = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Finalidades", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Finalidades_Usuarios_CadastradorId",
+                        column: x => x.CadastradorId,
+                        principalTable: "Usuarios",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Intencoes",
                 columns: table => new
                 {
@@ -272,6 +295,7 @@ namespace ImobAPI.Migrations
                     Observacao = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ProprietarioId = table.Column<int>(type: "int", nullable: true),
                     TipoImovelId = table.Column<int>(type: "int", nullable: true),
+                    FinalidadeId = table.Column<int>(type: "int", nullable: true),
                     IntencaoId = table.Column<int>(type: "int", nullable: true),
                     Cep = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Logradouro = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -302,6 +326,11 @@ namespace ImobAPI.Migrations
                         name: "FK_Imoveis_Clientes_ProprietarioId",
                         column: x => x.ProprietarioId,
                         principalTable: "Clientes",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Imoveis_Finalidades_FinalidadeId",
+                        column: x => x.FinalidadeId,
+                        principalTable: "Finalidades",
                         principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_Imoveis_Intencoes_IntencaoId",
@@ -557,6 +586,11 @@ namespace ImobAPI.Migrations
                 column: "TipoContratoId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Finalidades_CadastradorId",
+                table: "Finalidades",
+                column: "CadastradorId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Fotos_CadastradorId",
                 table: "Fotos",
                 column: "CadastradorId");
@@ -580,6 +614,11 @@ namespace ImobAPI.Migrations
                 name: "IX_Imoveis_CadastradorId",
                 table: "Imoveis",
                 column: "CadastradorId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Imoveis_FinalidadeId",
+                table: "Imoveis",
+                column: "FinalidadeId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Imoveis_IntencaoId",
@@ -681,6 +720,9 @@ namespace ImobAPI.Migrations
 
             migrationBuilder.DropTable(
                 name: "Clientes");
+
+            migrationBuilder.DropTable(
+                name: "Finalidades");
 
             migrationBuilder.DropTable(
                 name: "Intencoes");

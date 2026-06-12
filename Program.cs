@@ -70,23 +70,45 @@ builder.Services.AddDbContext<ImobContext>(options =>
              });
              imobContext.SaveChanges();
          }
-         if (!imobContext.TiposImovel.Any())
+         if (!imobContext.Finalidades.Any())
          {
-             imobContext.TiposImovel.Add(new ImobAPI.Entities.TipoImovel
+             imobContext.Finalidades.Add(new ImobAPI.Entities.Finalidade
              {
                  Nome = "Comercial",
                  Ativo = true,
                  DataCadastro = DateTime.Now
              });
-             imobContext.TiposImovel.Add(new ImobAPI.Entities.TipoImovel
+             imobContext.Finalidades.Add(new ImobAPI.Entities.Finalidade
              {
                  Nome = "Residencial",
                  Ativo = true,
                  DataCadastro = DateTime.Now
              });
+             imobContext.SaveChanges();
+         }
+         if (!imobContext.TiposImovel.Any())
+         {
              imobContext.TiposImovel.Add(new ImobAPI.Entities.TipoImovel
              {
-                 Nome = "Misto",
+                 Nome = "Apartamento",
+                 Ativo = true,
+                 DataCadastro = DateTime.Now
+             });
+             imobContext.TiposImovel.Add(new ImobAPI.Entities.TipoImovel
+             {
+                 Nome = "Casa",
+                 Ativo = true,
+                 DataCadastro = DateTime.Now
+             });
+             imobContext.TiposImovel.Add(new ImobAPI.Entities.TipoImovel
+             {
+                 Nome = "Loja",
+                 Ativo = true,
+                 DataCadastro = DateTime.Now
+             });
+             imobContext.TiposImovel.Add(new ImobAPI.Entities.TipoImovel
+             {
+                 Nome = "Galpão",
                  Ativo = true,
                  DataCadastro = DateTime.Now
              });
