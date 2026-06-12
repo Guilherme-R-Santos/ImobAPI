@@ -13,14 +13,14 @@ public class FinalidadeController : ControllerBase
         _context = context;
     }
 
-    // GET: api/Finalidade/ObterTodos
+    // GET: Finalidade/ObterTodos
     [HttpGet("ObterTodos")]
     public async Task<ActionResult<IEnumerable<Finalidade>>> GetFinalidade()
     {
         return await _context.Finalidades.ToListAsync();
     }
 
-    // GET: api/Finalidade/ObterPorId/5
+    // GET: Finalidade/ObterPorId/5
     [HttpGet("ObterPorId/{id}")]
     public async Task<ActionResult<Finalidade>> GetFinalidade(int id)
     {
@@ -34,7 +34,7 @@ public class FinalidadeController : ControllerBase
         return finalidade;
     }
 
-    // PUT: api/Finalidade/Atualizar/5
+    // PUT: Finalidade/Atualizar/5
     // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
     [HttpPut("Atualizar/{id}")]
     public async Task<IActionResult> PutFinalidade(int? id, Finalidade finalidade)
@@ -65,7 +65,7 @@ public class FinalidadeController : ControllerBase
         return NoContent();
     }
 
-    // POST: api/Finalidade/Criar
+    // POST: Finalidade/Criar
     // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
     [HttpPost("Criar")]
     public async Task<ActionResult<Finalidade>> PostFinalidade(Finalidade finalidade)
@@ -76,7 +76,7 @@ public class FinalidadeController : ControllerBase
         return CreatedAtAction("GetFinalidade", new { id = finalidade.Id }, finalidade);
     }
 
-    // DELETE: api/Finalidade/5
+    // DELETE: Finalidade/5
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteFinalidade(int? id)
     {
@@ -97,7 +97,7 @@ public class FinalidadeController : ControllerBase
         return _context.Finalidades.Any(e => e.Id == id);
     }
 
-    // PUT: api/Finalidade/Inativar/5
+    // PUT: Finalidade/Inativar/5
     [HttpPut("Inativar/{id}")]
     public async Task<IActionResult> Inactivate(int id)
     {
