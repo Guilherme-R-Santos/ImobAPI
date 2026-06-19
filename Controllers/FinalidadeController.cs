@@ -20,6 +20,20 @@ public class FinalidadeController : ControllerBase
         return await _context.Finalidades.ToListAsync();
     }
 
+    // GET: Finalidade/ObterPorNome/{nome}
+    [HttpGet("ObterPorNome/{nome}")]
+    public async Task<ActionResult<Finalidade>> GetFinalidadeByName(string nome)
+    {
+        var finalidade = await _context.Finalidades.FirstOrDefaultAsync(f => f.Nome.Equals(nome) && f.Ativo);
+
+        if (finalidade == null)
+        {
+            return NotFound();
+        }
+
+        return finalidade;
+    }
+
     // GET: Finalidade/ObterPorId/5
     [HttpGet("ObterPorId/{id}")]
     public async Task<ActionResult<Finalidade>> GetFinalidade(int id)
