@@ -37,6 +37,7 @@ namespace ImobAPI.Controllers
                 .Include(i => i.Proprietario)
                 .Include(i => i.TipoImovel)
                 .Include(i => i.Intencao)
+                .Include(i => i.Finalidade)
                 .Include(i => i.Cadastrador)
                 .Where(i => i.Ativo)
                 .ToList();
@@ -47,6 +48,11 @@ namespace ImobAPI.Controllers
         public IActionResult GetById(int id)
         {
             var imovel = _context.Imoveis
+                .Include(i => i.Proprietario)
+                .Include(i => i.TipoImovel)
+                .Include(i => i.Intencao)
+                .Include(i => i.Finalidade)
+                .Include(i => i.Cadastrador)
                 .FirstOrDefault(i => i.Id == id && i.Ativo);
             if (imovel == null)
             {
@@ -89,8 +95,22 @@ namespace ImobAPI.Controllers
                 return NotFound("Imóvel não encontrado");
             }
 
+            var finalidade = _context.Finalidades.Find(updatedImovel.Finalidade?.Id);
+            if (finalidade == null)
+            {
+                return BadRequest("Finalidade não encontrada.");
+            }
+
+            var intencao = _context.Intencoes.Find(updatedImovel.Intencao?.Id);
+            if (intencao == null)
+            {
+                return BadRequest("Intenção não encontrada.");
+            }
+
             imovel.Descricao = updatedImovel.Descricao;
             imovel.Observacao = updatedImovel.Observacao;
+            imovel.Finalidade = finalidade;
+            imovel.Intencao = intencao;
             imovel.Cep = updatedImovel.Cep;
             imovel.Logradouro = updatedImovel.Logradouro;
             imovel.Numero = updatedImovel.Numero;
