@@ -55,5 +55,14 @@ namespace ImobAPI.Controllers
             var fotos = _context.Fotos.Where(f => f.Ativo).ToList();
             return Ok(fotos);
         }
+
+        [HttpGet("ObterPorId/{id}")]
+        public IActionResult GetById(int id)
+        {
+            var foto = _context.Fotos.FirstOrDefault(f => f.Id == id && f.Ativo);
+            if (foto == null)
+                return NotFound("Foto não encontrada");
+            return Ok(foto);
+        }
     }
 }
