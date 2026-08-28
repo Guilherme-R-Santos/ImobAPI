@@ -3,6 +3,7 @@
     public class Cliente
     {
         public int Id { get; set; }
+        public string IdClienteAsaas { get; set; }
         public TipoCliente TipoCliente { get; set; }
         public Usuario Cadastrador { get; set; }
         public string Nome { get; set; }

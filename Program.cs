@@ -211,6 +211,34 @@ builder.Services.AddDbContext<ImobContext>(options =>
              });
              imobContext.SaveChanges();
          }
+         if (!imobContext.TiposCobranca.Any())
+         {
+             imobContext.TiposCobranca.Add(new ImobAPI.Entities.TipoCobranca
+             {
+                 Nome = "Boleto",
+                 Ativo = true,
+                 DataCadastro = DateTime.Now
+             });
+             imobContext.TiposCobranca.Add(new ImobAPI.Entities.TipoCobranca
+             {
+                 Nome = "Pix",
+                 Ativo = true,
+                 DataCadastro = DateTime.Now
+             });
+             imobContext.TiposCobranca.Add(new ImobAPI.Entities.TipoCobranca
+             {
+                 Nome = "Cartão",
+                 Ativo = true,
+                 DataCadastro = DateTime.Now
+             });
+             imobContext.TiposCobranca.Add(new ImobAPI.Entities.TipoCobranca
+             {
+                 Nome = "TED",
+                 Ativo = true,
+                 DataCadastro = DateTime.Now
+             });
+             imobContext.SaveChanges();
+         }
      }));
 
 builder.Services.AddControllers();

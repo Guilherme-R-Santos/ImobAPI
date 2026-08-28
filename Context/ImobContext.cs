@@ -28,5 +28,7 @@ namespace ImobAPI.Context
         public DbSet<TipoFoto> TiposFoto { get; set; }
         public DbSet<Vistoria> Vistorias { get; set; }
         public DbSet<Finalidade> Finalidades { get; set; }
+        public DbSet<TipoCobranca> TiposCobranca { get; set; }
+        public DbSet<Cobranca> Cobrancas { get; set; }
     }
 }

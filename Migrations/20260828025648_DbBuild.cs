@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace ImobAPI.Migrations
 {
     /// <inheritdoc />
-    public partial class BuildDbSeeded : Migration
+    public partial class DbBuild : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -170,6 +170,29 @@ namespace ImobAPI.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "TiposCobranca",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CadastradorId = table.Column<int>(type: "int", nullable: true),
+                    Nome = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Ativo = table.Column<bool>(type: "bit", nullable: false),
+                    DataCadastro = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DataAtualizacao = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DataInativacao = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TiposCobranca", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_TiposCobranca_Usuarios_CadastradorId",
+                        column: x => x.CadastradorId,
+                        principalTable: "Usuarios",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "TiposContrato",
                 columns: table => new
                 {
@@ -244,6 +267,7 @@ namespace ImobAPI.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
+                    IdClienteAsaas = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     TipoClienteId = table.Column<int>(type: "int", nullable: true),
                     CadastradorId = table.Column<int>(type: "int", nullable: true),
                     Nome = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -446,6 +470,53 @@ namespace ImobAPI.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Cobrancas",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    IdCobrancaAsaas = table.Column<int>(type: "int", nullable: false),
+                    CadastradorId = table.Column<int>(type: "int", nullable: true),
+                    ContratoId = table.Column<int>(type: "int", nullable: true),
+                    TipoCobrancaId = table.Column<int>(type: "int", nullable: true),
+                    Status = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    LinkBoleto = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    NossoNumero = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Pago = table.Column<bool>(type: "bit", nullable: false),
+                    DataPagamento = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    ComprovanteEnviado = table.Column<bool>(type: "bit", nullable: false),
+                    Valor = table.Column<double>(type: "float", nullable: false),
+                    valorLiquido = table.Column<double>(type: "float", nullable: false),
+                    Nome = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Vencimento = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    PartilhaAutomatica = table.Column<bool>(type: "bit", nullable: false),
+                    ContaPartilha = table.Column<int>(type: "int", nullable: false),
+                    DataCadastro = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DataAtualizacao = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DataInativacao = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Ativo = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Cobrancas", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Cobrancas_Contratos_ContratoId",
+                        column: x => x.ContratoId,
+                        principalTable: "Contratos",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Cobrancas_TiposCobranca_TipoCobrancaId",
+                        column: x => x.TipoCobrancaId,
+                        principalTable: "TiposCobranca",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Cobrancas_Usuarios_CadastradorId",
+                        column: x => x.CadastradorId,
+                        principalTable: "Usuarios",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Vistorias",
                 columns: table => new
                 {
@@ -535,6 +606,21 @@ namespace ImobAPI.Migrations
                 name: "IX_Clientes_TipoClienteId",
                 table: "Clientes",
                 column: "TipoClienteId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Cobrancas_CadastradorId",
+                table: "Cobrancas",
+                column: "CadastradorId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Cobrancas_ContratoId",
+                table: "Cobrancas",
+                column: "ContratoId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Cobrancas_TipoCobrancaId",
+                table: "Cobrancas",
+                column: "TipoCobrancaId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Contratos_CadastradorId",
@@ -667,6 +753,11 @@ namespace ImobAPI.Migrations
                 column: "CadastradorId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_TiposCobranca_CadastradorId",
+                table: "TiposCobranca",
+                column: "CadastradorId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_TiposContrato_CadastradorId",
                 table: "TiposContrato",
                 column: "CadastradorId");
@@ -706,7 +797,13 @@ namespace ImobAPI.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
+                name: "Cobrancas");
+
+            migrationBuilder.DropTable(
                 name: "Fotos");
+
+            migrationBuilder.DropTable(
+                name: "TiposCobranca");
 
             migrationBuilder.DropTable(
                 name: "TiposFoto");
