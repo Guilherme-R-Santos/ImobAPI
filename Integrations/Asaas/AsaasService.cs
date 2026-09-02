@@ -30,6 +30,12 @@ namespace ImobAPI.Integrations.Asaas
             return await ProcessResponseAsync<AsaasPaymentResponse>(response);
         }
 
+        public async Task<AsaasPaymentResponse> AtualizarCobrancaAsync(string idCobrancaAsaas, AsaasPaymentRequest request)
+        {
+            var response = await _httpClient.PutAsJsonAsync($"payments/{idCobrancaAsaas}", request);
+            return await ProcessResponseAsync<AsaasPaymentResponse>(response);
+        }
+
         private static async Task<T> ProcessResponseAsync<T>(HttpResponseMessage response)
         {
             if (response.IsSuccessStatusCode)

@@ -7,5 +7,6 @@ namespace ImobAPI.Integrations.Asaas
         Task<AsaasCustomerResponse> CriarClienteAsync(AsaasCustomerRequest request);
         Task<AsaasCustomerResponse> AtualizarClienteAsync(string idClienteAsaas, AsaasCustomerRequest request);
         Task<AsaasPaymentResponse> CriarCobrancaAsync(AsaasPaymentRequest request);
+        Task<AsaasPaymentResponse> AtualizarCobrancaAsync(string idCobrancaAsaas, AsaasPaymentRequest request);
     }
 }
