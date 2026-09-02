@@ -3,7 +3,7 @@
     public class Cobranca
     {
         public int Id { get; set; }
-        public int IdCobrancaAsaas { get; set; }
+        public string IdCobrancaAsaas { get; set; }
         public Usuario Cadastrador { get; set; }
         public Contrato Contrato { get; set; }
         public TipoCobranca TipoCobranca { get; set; }

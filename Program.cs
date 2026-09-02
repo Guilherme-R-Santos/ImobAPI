@@ -8,6 +8,7 @@ using System.Text;
 using BCrypt.Net;
 using static BCrypt.Net.BCrypt;
 using ImobAPI.Entities;
+using ImobAPI.Integrations.Asaas;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -240,6 +241,13 @@ builder.Services.AddDbContext<ImobContext>(options =>
              imobContext.SaveChanges();
          }
      }));
+
+builder.Services.AddHttpClient<IAsaasService, AsaasService>(client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["Asaas:BaseUrl"]);
+    client.DefaultRequestHeaders.Add("access_token", builder.Configuration["Asaas:ApiKey"]);
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
+});
 
 builder.Services.AddControllers();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
