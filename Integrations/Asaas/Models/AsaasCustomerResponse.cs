@@ -38,7 +38,7 @@ namespace ImobAPI.Integrations.Asaas.Models
         public string Province { get; set; }
 
         [JsonPropertyName("city")]
-        public string City { get; set; }
+        public int? City { get; set; }
 
         [JsonPropertyName("cityName")]
         public string CityName { get; set; }
