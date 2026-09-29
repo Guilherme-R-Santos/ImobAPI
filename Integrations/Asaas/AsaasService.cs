@@ -1,4 +1,6 @@
 using System.Net.Http.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using ImobAPI.Integrations.Asaas.Models;
 
 namespace ImobAPI.Integrations.Asaas
@@ -7,6 +9,11 @@ namespace ImobAPI.Integrations.Asaas
     {
         private readonly HttpClient _httpClient;
 
+        private static readonly JsonSerializerOptions SerializerOptions = new()
+        {
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+        };
+
         public AsaasService(HttpClient httpClient)
         {
             _httpClient = httpClient;
@@ -14,25 +21,25 @@ namespace ImobAPI.Integrations.Asaas
 
         public async Task<AsaasCustomerResponse> CriarClienteAsync(AsaasCustomerRequest request)
         {
-            var response = await _httpClient.PostAsJsonAsync("customers", request);
+            var response = await _httpClient.PostAsJsonAsync("customers", request, SerializerOptions);
             return await ProcessResponseAsync<AsaasCustomerResponse>(response);
         }
 
         public async Task<AsaasCustomerResponse> AtualizarClienteAsync(string idClienteAsaas, AsaasCustomerRequest request)
         {
-            var response = await _httpClient.PutAsJsonAsync($"customers/{idClienteAsaas}", request);
+            var response = await _httpClient.PutAsJsonAsync($"customers/{idClienteAsaas}", request, SerializerOptions);
             return await ProcessResponseAsync<AsaasCustomerResponse>(response);
         }
 
         public async Task<AsaasPaymentResponse> CriarCobrancaAsync(AsaasPaymentRequest request)
         {
-            var response = await _httpClient.PostAsJsonAsync("payments", request);
+            var response = await _httpClient.PostAsJsonAsync("payments", request, SerializerOptions);
             return await ProcessResponseAsync<AsaasPaymentResponse>(response);
         }
 
         public async Task<AsaasPaymentResponse> AtualizarCobrancaAsync(string idCobrancaAsaas, AsaasPaymentRequest request)
         {
-            var response = await _httpClient.PutAsJsonAsync($"payments/{idCobrancaAsaas}", request);
+            var response = await _httpClient.PutAsJsonAsync($"payments/{idCobrancaAsaas}", request, SerializerOptions);
             return await ProcessResponseAsync<AsaasPaymentResponse>(response);
         }
 
