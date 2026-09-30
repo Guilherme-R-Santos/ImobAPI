@@ -105,7 +105,10 @@ namespace ImobAPI.Controllers
         [HttpGet("ObterTodos")]
         public IActionResult GetAll()
         {
-            var cobrancas = _context.Cobrancas.Where(c => c.Ativo).ToList();
+            var cobrancas = _context.Cobrancas.Where(c => c.Ativo)
+                .Include(i => i.Contrato)
+                .Include(i => i.TipoCobranca)
+                .ToList();
             return Ok(cobrancas);
         }
         [HttpGet("ObterPorId/{id}")]
