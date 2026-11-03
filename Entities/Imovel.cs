@@ -18,6 +18,11 @@
         public string Cidade { get; set; }
         public string Estado { get; set; }
         public string Pais { get; set; }
+        public int Quartos { get; set; }
+        public int Banheiros { get; set; }
+        public int Vagas { get; set; }
+        public int Andar { get; set; }
+        public int Andares { get; set; }
         public string ? Complemento { get; set; }
         public string ? InscricaoIptu { get; set; }
         public string ? NumeroCbmerj { get; set; }

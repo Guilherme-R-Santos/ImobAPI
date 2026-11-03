@@ -412,11 +412,20 @@ namespace ImobAPI.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("Andar")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Andares")
+                        .HasColumnType("int");
+
                     b.Property<bool>("Ativo")
                         .HasColumnType("bit");
 
                     b.Property<string>("Bairro")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Banheiros")
+                        .HasColumnType("int");
 
                     b.Property<int?>("CadastradorId")
                         .HasColumnType("int");
@@ -487,10 +496,16 @@ namespace ImobAPI.Migrations
                     b.Property<int?>("ProprietarioId")
                         .HasColumnType("int");
 
+                    b.Property<int>("Quartos")
+                        .HasColumnType("int");
+
                     b.Property<decimal?>("TaxaIncendio")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int?>("TipoImovelId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Vagas")
                         .HasColumnType("int");
 
                     b.Property<decimal>("ValorLocacao")
