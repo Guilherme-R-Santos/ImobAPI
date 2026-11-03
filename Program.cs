@@ -262,7 +262,13 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateIssuerSigningKey = true,
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
             ValidAudience = builder.Configuration["Jwt:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)),
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(
+                    string.IsNullOrWhiteSpace(builder.Configuration["Jwt:Key"]) || builder.Configuration["Jwt:Key"]!.Length < 32
+                        ? throw new InvalidOperationException("Jwt:Key não configurada ou com menos de 32 caracteres.")
+                        : builder.Configuration["Jwt:Key"]!
+                )
+            ),
             ClockSkew = TimeSpan.Zero
         };
     });
