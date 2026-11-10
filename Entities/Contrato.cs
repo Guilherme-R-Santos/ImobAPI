@@ -6,6 +6,8 @@
         public string Nome { get; set; }
         public bool Ativo { get; set; }
         public decimal ValorContrato { get; set; }
+        public bool PartilhaAutomatica { get; set; }
+        public int ContaPartilha { get; set; }
         public Usuario Cadastrador { get; set; }
         public TipoContrato TipoContrato { get; set; }
         public Cliente Proprietario { get; set; }

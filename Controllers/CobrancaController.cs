@@ -44,6 +44,69 @@ namespace ImobAPI.Controllers
             return Ok(cobranca);
         }
 
+        public async Task<List<Entities.Cobranca>> GerarCobrancasDoContratoAsync(int contratoId)
+        {
+            var contrato = _context.Contratos
+                .Include(c => c.Cadastrador)
+                .Include(c => c.Contratante1)
+                .FirstOrDefault(c => c.Id == contratoId) ?? throw new Exception("Contrato não encontrado");
+
+            var tipoCobranca = _context.TiposCobranca.AsEnumerable()
+                .FirstOrDefault(t => string.Equals(t.Nome?.Trim(), "boleto", StringComparison.OrdinalIgnoreCase))
+                ?? _context.TiposCobranca.FirstOrDefault()
+                ?? throw new Exception("Nenhum tipo de cobrança cadastrado");
+
+            var cobrancasAntigas = _context.Cobrancas
+                .Where(c => c.Contrato.Id == contrato.Id && c.Ativo && !c.Pago)
+                .ToList();
+            foreach (var antiga in cobrancasAntigas)
+            {
+                antiga.Ativo = false;
+                antiga.DataInativacao = DateTime.Now;
+                antiga.DataAtualizacao = DateTime.Now;
+            }
+
+            var inicio = contrato.DataInicioVigencia ?? DateTime.Today;
+            var cobrancas = new List<Entities.Cobranca>();
+            for (int i = 0; i < contrato.PrazoMeses; i++)
+            {
+                var mes = new DateTime(inicio.Year, inicio.Month, 1).AddMonths(i);
+                var dia = Math.Clamp(contrato.Vencimento, 1, DateTime.DaysInMonth(mes.Year, mes.Month));
+                var vencimento = new DateTime(mes.Year, mes.Month, dia);
+                while (vencimento.DayOfWeek == DayOfWeek.Saturday || vencimento.DayOfWeek == DayOfWeek.Sunday)
+                    vencimento = vencimento.AddDays(1);
+
+                var cobranca = new Entities.Cobranca
+                {
+                    Cadastrador = contrato.Cadastrador,
+                    Contrato = contrato,
+                    TipoCobranca = tipoCobranca,
+                    Nome = $"{contrato.Nome} - Parcela {i + 1}/{contrato.PrazoMeses}",
+                    Valor = (double)contrato.ValorContrato,
+                    Vencimento = vencimento,
+                    PartilhaAutomatica = contrato.PartilhaAutomatica,
+                    ContaPartilha = contrato.ContaPartilha,
+                    DataCadastro = DateTime.Now,
+                    Ativo = true
+                };
+
+                if (string.IsNullOrWhiteSpace(contrato.Contratante1?.IdClienteAsaas))
+                {
+                    cobranca.SincronizadoAsaas = false;
+                    cobranca.ErroSincronizacaoAsaas = "Contratante1 sem cadastro no Asaas (IdClienteAsaas vazio).";
+                }
+                else
+                {
+                    await SincronizarComAsaasAsync(cobranca);
+                }
+
+                _context.Cobrancas.Add(cobranca);
+                cobrancas.Add(cobranca);
+            }
+            _context.SaveChanges();
+            return cobrancas;
+        }
+
         private static AsaasPaymentRequest MontarAsaasRequest(Entities.Cobranca cobranca)
         {
             return new AsaasPaymentRequest

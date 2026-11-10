@@ -17,7 +17,7 @@ namespace ImobAPI.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.9")
+                .HasAnnotation("ProductVersion", "10.0.14")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -225,6 +225,9 @@ namespace ImobAPI.Migrations
                     b.Property<int?>("CadastradorId")
                         .HasColumnType("int");
 
+                    b.Property<int>("ContaPartilha")
+                        .HasColumnType("int");
+
                     b.Property<int?>("Contratante1Id")
                         .HasColumnType("int");
 
@@ -269,6 +272,9 @@ namespace ImobAPI.Migrations
 
                     b.Property<int?>("ObjetoContratoId")
                         .HasColumnType("int");
+
+                    b.Property<bool>("PartilhaAutomatica")
+                        .HasColumnType("bit");
 
                     b.Property<int>("PrazoMeses")
                         .HasColumnType("int");

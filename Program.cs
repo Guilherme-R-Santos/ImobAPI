@@ -244,7 +244,7 @@ builder.Services.AddDbContext<ImobContext>(options =>
 
 builder.Services.AddHttpClient<IAsaasService, AsaasService>(client =>
 {
-    client.BaseAddress = new Uri(builder.Configuration["Asaas:BaseUrl"]);
+    client.BaseAddress = new Uri(builder.Configuration["Asaas:BaseUrl"]!.TrimEnd('/') + "/");
     client.DefaultRequestHeaders.Add("access_token", builder.Configuration["Asaas:ApiKey"]);
     client.DefaultRequestHeaders.Add("Accept", "application/json");
     client.DefaultRequestHeaders.Add("User-Agent", "ImobAPI");

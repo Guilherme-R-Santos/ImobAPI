@@ -9,9 +9,11 @@ namespace ImobAPI.Controllers
     public class ContratoController : ControllerBase
     {
         private readonly Context.ImobContext _context;
-        public ContratoController(Context.ImobContext context)
+        private readonly ImobAPI.Integrations.Asaas.IAsaasService _asaasService;
+        public ContratoController(Context.ImobContext context, ImobAPI.Integrations.Asaas.IAsaasService asaasService)
         {
             _context = context;
+            _asaasService = asaasService;
         }
 
         private IQueryable<Entities.Contrato> ContratosComIncludes()
@@ -53,7 +55,7 @@ namespace ImobAPI.Controllers
         }
 
         [HttpPost("Criar")]
-        public IActionResult Create(Entities.Contrato contrato)
+        public async Task<IActionResult> Create(Entities.Contrato contrato)
         {
             contrato.Cadastrador = _context.Usuarios.Find(contrato.Cadastrador.Id) ?? throw new Exception("Usuário cadastrador não encontrado");
             contrato.TipoContrato = _context.TiposContrato.Find(contrato.TipoContrato.Id) ?? throw new Exception("Tipo de contrato não encontrado");
@@ -76,6 +78,8 @@ namespace ImobAPI.Controllers
             contrato.Ativo = true;
             _context.Contratos.Add(contrato);
             _context.SaveChanges();
+            var cobrancaController = new CobrancaController(_context, _asaasService);
+            await cobrancaController.GerarCobrancasDoContratoAsync(contrato.Id);
             return Ok(contrato);
         }
         [HttpGet("ObterTodos")]
@@ -131,7 +135,7 @@ namespace ImobAPI.Controllers
             return Ok(existingContrato);
         }
         [HttpPut("Atualizar/{id}")]
-        public IActionResult Update(int id, Entities.Contrato contrato)
+        public async Task<IActionResult> Update(int id, Entities.Contrato contrato)
         {
             var existingContrato = _context.Contratos.Find(id);
             if (existingContrato == null || existingContrato.Ativo == false)
@@ -172,8 +176,12 @@ namespace ImobAPI.Controllers
             existingContrato.DataInicioVigencia = contrato.DataInicioVigencia;
             existingContrato.Nome = contrato.Nome;
             existingContrato.ValorContrato = contrato.ValorContrato;
+            existingContrato.PartilhaAutomatica = contrato.PartilhaAutomatica;
+            existingContrato.ContaPartilha = contrato.ContaPartilha;
             existingContrato.DataAtualizacao = DateTime.Now;
             _context.SaveChanges();
+            var cobrancaController = new CobrancaController(_context, _asaasService);
+            await cobrancaController.GerarCobrancasDoContratoAsync(existingContrato.Id);
             return Ok(existingContrato);
         }
     }
