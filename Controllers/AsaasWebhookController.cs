@@ -1,5 +1,13 @@
-using Microsoft.AspNetCore.Mvc;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
+using ImobAPI.Context;
+using ImobAPI.Entities;
 using ImobAPI.Integrations.Asaas.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 
 namespace ImobAPI.Controllers
 {
@@ -7,101 +15,71 @@ namespace ImobAPI.Controllers
     [Route("[controller]")]
     public class AsaasWebhookController : ControllerBase
     {
-        private readonly Context.ImobContext _context;
+        private readonly ImobContext _context;
         private readonly IConfiguration _configuration;
         private readonly ILogger<AsaasWebhookController> _logger;
 
-        private static readonly HashSet<string> EventosPago = new()
-        {
-            "PAYMENT_CONFIRMED",
-            "PAYMENT_RECEIVED"
-        };
-
-        public AsaasWebhookController(Context.ImobContext context, IConfiguration configuration, ILogger<AsaasWebhookController> logger)
+        public AsaasWebhookController(ImobContext context, IConfiguration configuration, ILogger<AsaasWebhookController> logger)
         {
             _context = context;
             _configuration = configuration;
             _logger = logger;
         }
 
+        [AllowAnonymous]
         [HttpPost("Receber")]
-        public IActionResult Receber([FromBody] AsaasWebhookRequest webhookRequest, [FromHeader(Name = "asaas-access-token")] string asaasAccessToken)
+        public async Task<IActionResult> Receber([FromBody] AsaasWebhookRequest webhookRequest, CancellationToken cancellationToken)
         {
             var tokenEsperado = _configuration["Asaas:WebhookToken"];
-            if (!string.IsNullOrWhiteSpace(tokenEsperado) && tokenEsperado != asaasAccessToken)
+            if (string.IsNullOrWhiteSpace(tokenEsperado))
+            {
+                _logger.LogError("Asaas:WebhookToken não configurado; webhook indisponível.");
+                return StatusCode(503);
+            }
+
+            var tokens = Request.Headers["asaas-access-token"];
+            if (tokens.Count != 1 || string.IsNullOrWhiteSpace(tokens[0]) ||
+                !CryptographicOperations.FixedTimeEquals(
+                    SHA256.HashData(Encoding.UTF8.GetBytes(tokenEsperado)),
+                    SHA256.HashData(Encoding.UTF8.GetBytes(tokens[0]!))))
             {
                 _logger.LogWarning("Webhook Asaas recebido com token inválido.");
                 return Unauthorized();
             }
 
-            if (webhookRequest?.Payment == null || string.IsNullOrWhiteSpace(webhookRequest.Payment.Id))
+            if (webhookRequest == null || string.IsNullOrWhiteSpace(webhookRequest.Id) || webhookRequest.Id.Length > 256 ||
+                string.IsNullOrWhiteSpace(webhookRequest.Event) || webhookRequest.Event.Length > 128 ||
+                webhookRequest.Payment?.Id?.Length > 128 ||
+                (webhookRequest.Event.StartsWith("PAYMENT_", StringComparison.Ordinal) &&
+                 string.IsNullOrWhiteSpace(webhookRequest.Payment?.Id)))
             {
-                _logger.LogWarning("Webhook Asaas recebido sem dados de cobrança (payment).");
-                return Ok();
+                _logger.LogWarning("Webhook Asaas recebido com identificador ou dados de cobrança inválidos.");
+                return BadRequest("Evento ou cobrança inválidos.");
             }
 
-            var cobranca = _context.Cobrancas.FirstOrDefault(c => c.IdCobrancaAsaas == webhookRequest.Payment.Id);
-            if (cobranca == null)
+            _context.EventosWebhookAsaas.Add(new EventoWebhookAsaas
             {
-                _logger.LogWarning("Webhook Asaas recebido para cobrança não encontrada localmente. IdCobrancaAsaas: {IdCobrancaAsaas}, Evento: {Evento}", webhookRequest.Payment.Id, webhookRequest.Event);
-                return Ok();
+                IdEventoAsaas = webhookRequest.Id,
+                Tipo = webhookRequest.Event,
+                IdCobrancaAsaas = webhookRequest.Payment?.Id,
+                Payload = JsonSerializer.Serialize(webhookRequest),
+                RecebidoEmUtc = DateTime.UtcNow
+            });
+
+            try
+            {
+                await _context.SaveChangesAsync(cancellationToken);
+            }
+            catch (DbUpdateException ex) when (ex.InnerException is SqlException sql && (sql.Number == 2601 || sql.Number == 2627))
+            {
+                if (!await _context.EventosWebhookAsaas.AsNoTracking().AnyAsync(e => e.IdEventoAsaas == webhookRequest.Id, cancellationToken))
+                {
+                    throw;
+                }
+                _logger.LogInformation("Evento Asaas duplicado recebido: {IdEvento}", webhookRequest.Id);
             }
 
-            AtualizarCobranca(cobranca, webhookRequest);
-
-            _context.SaveChanges();
             return Ok();
-        }
-
-        private void AtualizarCobranca(Entities.Cobranca cobranca, AsaasWebhookRequest webhookRequest)
-        {
-            var payment = webhookRequest.Payment;
-
-            switch (webhookRequest.Event)
-            {
-                case "PAYMENT_CREATED":
-                case "PAYMENT_UPDATED":
-                case "PAYMENT_CONFIRMED":
-                case "PAYMENT_RECEIVED":
-                case "PAYMENT_OVERDUE":
-                case "PAYMENT_RESTORED":
-                case "PAYMENT_REFUNDED":
-                    cobranca.Status = payment.Status ?? cobranca.Status;
-                    cobranca.LinkBoleto = payment.BankSlipUrl ?? payment.InvoiceUrl ?? cobranca.LinkBoleto;
-                    cobranca.NossoNumero = payment.NossoNumero ?? cobranca.NossoNumero;
-                    if (payment.NetValue.HasValue)
-                    {
-                        cobranca.valorLiquido = payment.NetValue.Value;
-                    }
-
-                    if (EventosPago.Contains(webhookRequest.Event))
-                    {
-                        cobranca.Pago = true;
-                        var dataPagamento = payment.PaymentDate ?? payment.ClientPaymentDate ?? payment.ConfirmedDate;
-                        if (DateTime.TryParse(dataPagamento, out var dataPagamentoConvertida))
-                        {
-                            cobranca.DataPagamento = dataPagamentoConvertida;
-                        }
-                    }
-                    else if (webhookRequest.Event == "PAYMENT_REFUNDED")
-                    {
-                        cobranca.Pago = false;
-                        cobranca.DataPagamento = null;
-                    }
-                    break;
-
-                case "PAYMENT_DELETED":
-                    cobranca.Status = payment.Status ?? cobranca.Status;
-                    cobranca.Ativo = false;
-                    cobranca.DataInativacao = DateTime.Now;
-                    break;
-
-                default:
-                    _logger.LogInformation("Evento Asaas não tratado recebido: {Evento} para cobrança {IdCobrancaAsaas}", webhookRequest.Event, payment.Id);
-                    return;
-            }
-
-            cobranca.DataAtualizacao = DateTime.Now;
         }
     }
 }

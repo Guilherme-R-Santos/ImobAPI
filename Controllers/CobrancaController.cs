@@ -203,19 +203,92 @@ namespace ImobAPI.Controllers
             return Ok(cobrancas);
         }
         [HttpPut("Inativar/{id}")]
-        public IActionResult Inactivate(int id)
+        public async Task<IActionResult> Inactivate(int id)
         {
             var existingCobranca = _context.Cobrancas.Find(id);
             if (existingCobranca == null)
             {
                 return NotFound("Cobrança não encontrada.");
             }
-            existingCobranca.Ativo = false;
-            existingCobranca.DataInativacao = DateTime.Now;
-            existingCobranca.DataAtualizacao = DateTime.Now;
+
+            var erroCancelamentoAsaas = await InativarCobrancaAsync(existingCobranca);
             _context.SaveChanges();
+
+            if (erroCancelamentoAsaas != null)
+            {
+                return StatusCode(502, new { mensagem = "Cobrança inativada localmente, mas houve falha ao cancelar no Asaas.", detalhes = erroCancelamentoAsaas.Message, cobranca = existingCobranca });
+            }
+
             return Ok(existingCobranca);
         }
+
+        [HttpPut("InativarLista")]
+        public async Task<IActionResult> InactivateList([FromBody] List<int> cobrancaIds)
+        {
+            if (cobrancaIds == null || cobrancaIds.Count == 0)
+            {
+                return BadRequest("Informe ao menos um ID de cobrança.");
+            }
+
+            var resultados = new List<object>();
+            var houveFalha = false;
+            foreach (var id in cobrancaIds.Distinct())
+            {
+                var cobranca = _context.Cobrancas.Find(id);
+                if (cobranca == null)
+                {
+                    houveFalha = true;
+                    resultados.Add(new { id, inativada = false, mensagem = "Cobrança não encontrada." });
+                    continue;
+                }
+
+                var erroCancelamentoAsaas = await InativarCobrancaAsync(cobranca);
+                if (erroCancelamentoAsaas != null)
+                {
+                    houveFalha = true;
+                    resultados.Add(new { id, inativada = true, sincronizadoAsaas = false, detalhes = erroCancelamentoAsaas.Message, cobranca });
+                }
+                else
+                {
+                    resultados.Add(new { id, inativada = true, sincronizadoAsaas = true, cobranca });
+                }
+            }
+
+            _context.SaveChanges();
+            return houveFalha ? StatusCode(207, resultados) : Ok(resultados);
+        }
+
+        private async Task<AsaasIntegrationException?> InativarCobrancaAsync(Entities.Cobranca cobranca)
+        {
+            AsaasIntegrationException? erroCancelamentoAsaas = null;
+            if (!string.IsNullOrWhiteSpace(cobranca.IdCobrancaAsaas))
+            {
+                try
+                {
+                    var respostaAsaas = await _asaasService.CancelarCobrancaAsync(cobranca.IdCobrancaAsaas);
+                    if (!respostaAsaas.Deleted)
+                    {
+                        throw new AsaasIntegrationException("O Asaas não confirmou o cancelamento da cobrança.", 502);
+                    }
+
+                    cobranca.Status = "DELETED";
+                    cobranca.SincronizadoAsaas = true;
+                    cobranca.ErroSincronizacaoAsaas = null;
+                }
+                catch (AsaasIntegrationException ex)
+                {
+                    erroCancelamentoAsaas = ex;
+                    cobranca.SincronizadoAsaas = false;
+                    cobranca.ErroSincronizacaoAsaas = ex.Message;
+                }
+            }
+
+            cobranca.Ativo = false;
+            cobranca.DataInativacao = DateTime.Now;
+            cobranca.DataAtualizacao = DateTime.Now;
+            return erroCancelamentoAsaas;
+        }
+
         [HttpPut("Atualizar/{id}")]
         public async Task<IActionResult> Update(int id, Entities.Cobranca updatedCobranca)
         {

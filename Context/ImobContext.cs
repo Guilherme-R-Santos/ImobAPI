@@ -30,5 +30,21 @@ namespace ImobAPI.Context
         public DbSet<Finalidade> Finalidades { get; set; }
         public DbSet<TipoCobranca> TiposCobranca { get; set; }
         public DbSet<Cobranca> Cobrancas { get; set; }
+        public DbSet<EventoWebhookAsaas> EventosWebhookAsaas { get; set; }
+        public DbSet<EnvioCobrancaEmail> EnviosCobrancaEmail { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+            modelBuilder.Entity<EventoWebhookAsaas>()
+                .Property(e => e.IdEventoAsaas)
+                .UseCollation("Latin1_General_100_BIN2");
+            modelBuilder.Entity<EventoWebhookAsaas>()
+                .HasIndex(e => e.IdEventoAsaas)
+                .IsUnique();
+            modelBuilder.Entity<EnvioCobrancaEmail>()
+                .HasIndex(e => new { e.CobrancaId, e.Tipo, e.Referencia })
+                .IsUnique();
+        }
     }
 }

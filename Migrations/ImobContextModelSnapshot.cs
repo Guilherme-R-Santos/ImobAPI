@@ -323,6 +323,88 @@ namespace ImobAPI.Migrations
                     b.ToTable("Contratos");
                 });
 
+            modelBuilder.Entity("ImobAPI.Entities.EnvioCobrancaEmail", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<int>("CobrancaId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("ConcluidoEmUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("IniciadoEmUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("Referencia")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Situacao")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<string>("Tipo")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CobrancaId", "Tipo", "Referencia")
+                        .IsUnique();
+
+                    b.ToTable("EnviosCobrancaEmail");
+                });
+
+            modelBuilder.Entity("ImobAPI.Entities.EventoWebhookAsaas", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("IdCobrancaAsaas")
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<string>("IdEventoAsaas")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)")
+                        .UseCollation("Latin1_General_100_BIN2");
+
+                    b.Property<string>("Payload")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("ProcessadoEmUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("ProximaTentativaEmUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("RecebidoEmUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Tipo")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IdEventoAsaas")
+                        .IsUnique();
+
+                    b.ToTable("EventosWebhookAsaas");
+                });
+
             modelBuilder.Entity("ImobAPI.Entities.Finalidade", b =>
                 {
                     b.Property<int>("Id")

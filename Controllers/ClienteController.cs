@@ -49,6 +49,17 @@ namespace ImobAPI.Controllers
                     return StatusCode(502, new { mensagem = "Falha ao criar cliente no Asaas.", detalhes = ex.Message });
                 }
             }
+            else
+            {
+                try
+                {
+                    await _asaasService.DesativarNotificacoesClienteAsync(cliente.IdClienteAsaas);
+                }
+                catch (AsaasIntegrationException ex)
+                {
+                    return StatusCode(502, new { mensagem = "Falha ao desativar notificações do cliente no Asaas.", detalhes = ex.Message });
+                }
+            }
 
             _context.Clientes.Add(cliente);
             _context.SaveChanges();

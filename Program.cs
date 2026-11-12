@@ -9,6 +9,7 @@ using BCrypt.Net;
 using static BCrypt.Net.BCrypt;
 using ImobAPI.Entities;
 using ImobAPI.Integrations.Asaas;
+using ImobAPI.Integrations.Email;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -249,6 +250,13 @@ builder.Services.AddHttpClient<IAsaasService, AsaasService>(client =>
     client.DefaultRequestHeaders.Add("Accept", "application/json");
     client.DefaultRequestHeaders.Add("User-Agent", "ImobAPI");
 });
+
+builder.Services.AddHostedService<AsaasWebhookProcessor>();
+builder.Services.Configure<EmailCobrancaOptions>(builder.Configuration.GetSection("EmailCobranca"));
+builder.Services.AddScoped<IEmailCobrancaSender, GmailCobrancaSender>();
+builder.Services.AddScoped<CobrancaEmailJobRunner>();
+builder.Services.AddHostedService<CobrancaMensalEmailJob>();
+builder.Services.AddHostedService<CobrancaVencimentoEmailJob>();
 
 builder.Services.AddControllers();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

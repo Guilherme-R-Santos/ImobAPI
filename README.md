@@ -125,6 +125,7 @@ Em ambiente de desenvolvimento:
 - Rotas anônimas explícitas:
   - `GET /Usuario/Connect`
   - `GET /Usuario/Login`
+  - `POST /AsaasWebhook/Receber` (protegida pelo token do webhook Asaas)
 
 ### Emissão de token
 
@@ -200,6 +201,33 @@ dotnet restore
 dotnet build
 dotnet run
 ```
+
+### Notificações de cobranças Asaas
+
+A integração envia `notificationDisabled: true` ao criar ou atualizar clientes no Asaas. Para clientes já existentes, ela também desativa as notificações ao vinculá-los e antes de criar ou atualizar cobranças; se essa desativação falhar, a operação de cobrança não é enviada ao Asaas e a falha de sincronização é informada. Essa configuração é do cliente e desativa suas notificações de cobrança em todos os canais, inclusive para cobranças existentes, não apenas para a cobrança criada. Clientes existentes ainda não processados pela integração não são alterados em massa.
+
+### E-mails agendados de cobrança
+
+Os dois serviços ficam **desabilitados por padrão** (`EmailCobranca:Habilitado`). Com a aplicação em execução, o job mensal verifica no dia 1, a partir de `HoraEnvio`, cobranças com vencimento naquele mês; o diário verifica a partir do mesmo horário as cobranças que vencem naquele dia. O padrão é 8h no fuso `America/Sao_Paulo`. São considerados apenas registros ativos, não pagos e com status Asaas `PENDING`, usando o e-mail de `Contrato.Contratante1` e o link HTTPS da cobrança. E-mail ou link ausentes ou inválidos são registrados nos logs e não enviados. A cobrança que vence no dia 1 pode receber **os dois e-mails**, pois são jobs distintos.
+
+Para configurar:
+
+1. Aplique as migrações (`dotnet ef database update`) antes de ativar os jobs.
+2. Preencha `EmailCobranca:ContaGoogle`, `AssuntoMensal`, `TextoMensal`, `AssuntoVencimento` e `TextoVencimento`. Os modelos de texto simples aceitam `{Cliente}`, `{Cobranca}`, `{Vencimento}`, `{Valor}` e `{Link}`; o texto mensal deve incluir `{Link}`. Assuntos e textos precisam ser definidos por você.
+3. Configure `EmailCobranca:SenhaAplicativo` com a variável de ambiente `EmailCobranca__SenhaAplicativo` ou outro provedor seguro, nunca no repositório. O envio usa `smtp.gmail.com:587` com STARTTLS e uma [senha de app Google](https://support.google.com/accounts/answer/185833), se disponível para a conta; ela exige verificação em duas etapas e pode ser indisponível em contas administradas. A senha normal da conta não deve ser utilizada.
+4. Configure `EmailCobranca:Habilitado` como `true` e reinicie a aplicação. Configuração incompleta mantém o job correspondente parado e gera erro no log. Verifique as políticas e limites de envio da conta Google.
+
+Uma tentativa é reservada no banco por cobrança, job e período antes de enviar, evitando duplicidade inclusive entre instâncias. Após envio, o registro em `EnviosCobrancaEmail` fica `Enviado`; falhas ficam `FalhaOuIncerto`, e uma interrupção pode deixá-lo `EmEnvio`. Como SMTP não garante saber se a mensagem foi entregue após uma falha, **não há retentativa automática** desses registros: investigue no Gmail e nos logs antes de qualquer reenvio manual. Os jobs só executam enquanto a aplicação está ligada; se ela não estiver disponível no dia 1 ou no dia do vencimento, esse período não é recuperado automaticamente. O estado local depende da sincronização de pagamentos com o Asaas.
+
+### Webhook de cobranças Asaas
+
+1. Aplique as migrações ao banco antes de iniciar a aplicação, por exemplo com `dotnet ef database update` no ambiente apropriado.
+2. Configure `Asaas:WebhookToken` por um provedor seguro, como variável de ambiente `Asaas__WebhookToken` ou user secrets. Use um segredo próprio para o webhook, diferente da chave da API Asaas, e configure o mesmo valor como `authToken` no Asaas. Sem esse segredo, o endpoint retorna `503`; token incorreto retorna `401`.
+3. Cadastre no Asaas a URL HTTPS pública `https://<seu-host>/AsaasWebhook/Receber`, selecione os eventos de cobrança desejados e use envio **sequencial** (`SEQUENTIALLY`). O Asaas envia o token no header `asaas-access-token`.
+
+O endpoint grava o evento antes de retornar `200`, sem guardar campos adicionais como dados de cartão. O ID do evento é único, portanto reenvios não repetem o processamento. Um serviço em segundo plano atualiza a cobrança por `IdCobrancaAsaas`: status e dados disponíveis; pagamento e data nos eventos de confirmação/recebimento; estorno integral ou recebimento em dinheiro desfeito; e inativação/restauração nos respectivos eventos. Estorno parcial não é tratado como estorno integral. Os eventos para uma mesma cobrança são processados na ordem de recebimento; eventos de cobrança ainda não cadastrada são mantidos pendentes e retentados a cada minuto. A aplicação deve permanecer em execução para processar a fila; monitore os logs e os registros pendentes em `EventosWebhookAsaas`, especialmente quando uma cobrança não for encontrada. Falhas de banco impedem a confirmação ao Asaas ou mantêm o evento pendente para nova tentativa.
+
+A exclusão de cobrança não faz estorno e não cancela uma assinatura ou parcelamento. O webhook deve ser configurado para receber apenas eventos necessários; eventos de outros recursos são registrados e ignorados. Consulte a [documentação de webhooks de cobrança](https://docs.asaas.com/docs/webhook-para-cobrancas) e os logs do Asaas em caso de fila pausada.
 
 ### URLs padrão de desenvolvimento
 
