@@ -36,6 +36,11 @@ namespace ImobAPI.Controllers
         [HttpPost("Criar")]
         public IActionResult Create(Entities.Usuario usuario)
         {
+            if (!ImobAPI.Integrations.Asaas.RepasseConfiguracao.Administrador(_context, User)) return Forbid();
+            if (usuario.Tipo == null) return BadRequest("Informe o tipo de usuário existente.");
+            var tipo = _context.TiposUsuario.Find(usuario.Tipo.Id);
+            if (tipo == null || !tipo.Ativo) return BadRequest("Tipo de usuário inválido.");
+            usuario.Tipo = tipo;
             var existingUser = _context.Usuarios.FirstOrDefault(u => u.Login == usuario.Login);
             if (existingUser != null)
             {
@@ -120,6 +125,7 @@ namespace ImobAPI.Controllers
         [HttpPut("Atualizar/{id}")]
         public IActionResult Atualizar(int id, Entities.Usuario usuarioAtualizado)
         {
+            if (!ImobAPI.Integrations.Asaas.RepasseConfiguracao.Administrador(_context, User)) return Forbid();
             var usuario = _context.Usuarios.Find(id);
             if (usuario == null)
             {
@@ -127,7 +133,13 @@ namespace ImobAPI.Controllers
             }
             usuario.Nome = usuarioAtualizado.Nome;
             usuario.Login = usuarioAtualizado.Login;
-            usuario.Senha = usuarioAtualizado.Senha;
+            if (!string.IsNullOrEmpty(usuarioAtualizado.Senha))
+            {
+                var senha = usuarioAtualizado.Senha;
+                if (senha.Length < 8 || senha.Length > 20 || !senha.Any(char.IsUpper) || !senha.Any(char.IsLower) || !senha.Any(char.IsDigit) || !senha.Any(ch => !char.IsLetterOrDigit(ch)))
+                    return BadRequest("A senha deve ter de 8 a 20 caracteres, incluindo maiúscula, minúscula, número e caractere especial.");
+                usuario.Senha = HashPassword(senha, WorkFactor);
+            }
             usuario.Ativo = usuarioAtualizado.Ativo;
             usuario.DataAtualizacao = DateTime.Now;
             _context.SaveChanges();
@@ -137,6 +149,7 @@ namespace ImobAPI.Controllers
         [HttpPut("InativarUsuario/{id}")]
         public IActionResult InativarUsuario(int id)
         {
+            if (!ImobAPI.Integrations.Asaas.RepasseConfiguracao.Administrador(_context, User)) return Forbid();
             var usuario = _context.Usuarios.Find(id);
             if (usuario == null)
             {
@@ -153,6 +166,7 @@ namespace ImobAPI.Controllers
         [HttpDelete("Deletar/{id}")]
         public IActionResult Deletar(int id)
         {
+            if (!ImobAPI.Integrations.Asaas.RepasseConfiguracao.Administrador(_context, User)) return Forbid();
             var usuario = _context.Usuarios.Find(id);
             if (usuario == null)
             {

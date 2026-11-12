@@ -19,6 +19,10 @@ namespace ImobAPI.Controllers
         [HttpPost("Criar")]
         public async Task<IActionResult> Create(Entities.Cobranca cobranca)
         {
+            if ((cobranca.RepasseAutomatico || cobranca.ContaRepasse1 != null || cobranca.ContaRepasse2 != null) && !RepasseConfiguracao.Administrador(_context, User)) return Forbid();
+            if (cobranca.RepasseAutomatico && cobranca.ContaRepasse1 == null && cobranca.ContaRepasse2 == null) return BadRequest("Informe ao menos um destinatário para o repasse automático.");
+            var erroRepasse = RepasseConfiguracao.ValidarContas(cobranca.ContaRepasse1, cobranca.ContaRepasse2);
+            if (erroRepasse != null) return BadRequest(erroRepasse);
             cobranca.Cadastrador = _context.Usuarios.Find(cobranca.Cadastrador.Id) ?? throw new Exception("Usuário cadastrador não encontrado");
             cobranca.Contrato = _context.Contratos.Include(c => c.Contratante1).FirstOrDefault(c => c.Id == cobranca.Contrato.Id) ?? throw new Exception("Contrato não encontrado");
             cobranca.TipoCobranca = _context.TiposCobranca.Find(cobranca.TipoCobranca.Id) ?? throw new Exception("Tipo de cobrança não encontrado");
@@ -84,8 +88,9 @@ namespace ImobAPI.Controllers
                     Nome = $"{contrato.Nome} - Parcela {i + 1}/{contrato.PrazoMeses}",
                     Valor = (double)contrato.ValorContrato,
                     Vencimento = vencimento,
-                    PartilhaAutomatica = contrato.PartilhaAutomatica,
-                    ContaPartilha = contrato.ContaPartilha,
+                    RepasseAutomatico = contrato.RepasseAutomatico,
+                    ContaRepasse1 = CopiarContaRepasse(contrato.ContaRepasse1),
+                    ContaRepasse2 = CopiarContaRepasse(contrato.ContaRepasse2),
                     DataCadastro = DateTime.Now,
                     Ativo = true
                 };
@@ -105,6 +110,27 @@ namespace ImobAPI.Controllers
             }
             _context.SaveChanges();
             return cobrancas;
+        }
+
+        private static Entities.ContaRepasse CopiarContaRepasse(Entities.ContaRepasse conta)
+        {
+            if (conta == null) return null;
+            return new Entities.ContaRepasse
+            {
+                Modalidade = conta.Modalidade,
+                TipoValor = conta.TipoValor,
+                Valor = conta.Valor,
+                ChavePix = conta.ChavePix,
+                TipoChavePix = conta.TipoChavePix,
+                CodigoBanco = conta.CodigoBanco,
+                NomeTitular = conta.NomeTitular,
+                CpfCnpjTitular = conta.CpfCnpjTitular,
+                DataNascimentoTitular = conta.DataNascimentoTitular,
+                Agencia = conta.Agencia,
+                Conta = conta.Conta,
+                DigitoConta = conta.DigitoConta,
+                TipoConta = conta.TipoConta
+            };
         }
 
         private static AsaasPaymentRequest MontarAsaasRequest(Entities.Cobranca cobranca)
@@ -300,13 +326,18 @@ namespace ImobAPI.Controllers
             {
                 return NotFound("Cobrança não encontrada.");
             }
+            if ((updatedCobranca.RepasseAutomatico || updatedCobranca.ContaRepasse1 != null || updatedCobranca.ContaRepasse2 != null || existingCobranca.ContaRepasse1 != null || existingCobranca.ContaRepasse2 != null) && !RepasseConfiguracao.Administrador(_context, User)) return Forbid();
+            if (updatedCobranca.RepasseAutomatico && updatedCobranca.ContaRepasse1 == null && updatedCobranca.ContaRepasse2 == null) return BadRequest("Informe ao menos um destinatário para o repasse automático.");
+            var erroRepasse = RepasseConfiguracao.ValidarContas(updatedCobranca.ContaRepasse1, updatedCobranca.ContaRepasse2);
+            if (erroRepasse != null) return BadRequest(erroRepasse);
             existingCobranca.TipoCobranca = _context.TiposCobranca.Find(updatedCobranca.TipoCobranca.Id) ?? throw new Exception("Tipo de cobrança não encontrado");
             existingCobranca.Contrato = _context.Contratos.Include(c => c.Contratante1).FirstOrDefault(c => c.Id == updatedCobranca.Contrato.Id) ?? throw new Exception("Contrato não encontrado");
             existingCobranca.Nome = updatedCobranca.Nome;
             existingCobranca.Valor = updatedCobranca.Valor;
             existingCobranca.Vencimento = updatedCobranca.Vencimento;
-            existingCobranca.PartilhaAutomatica = updatedCobranca.PartilhaAutomatica;
-            existingCobranca.ContaPartilha = updatedCobranca.ContaPartilha;
+            existingCobranca.RepasseAutomatico = updatedCobranca.RepasseAutomatico;
+            existingCobranca.ContaRepasse1 = updatedCobranca.ContaRepasse1;
+            existingCobranca.ContaRepasse2 = updatedCobranca.ContaRepasse2;
             existingCobranca.ComprovanteEnviado = updatedCobranca.ComprovanteEnviado;
 
             var contratante = existingCobranca.Contrato.Contratante1 ?? throw new Exception("Contrato não possui Contratante1 definido");

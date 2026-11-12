@@ -37,9 +37,6 @@ namespace ImobAPI.Integrations.Asaas.Models
         [JsonPropertyName("postalService")]
         public bool PostalService { get; set; }
 
-        [JsonPropertyName("split")]
-        public List<AsaasSplit> Split { get; set; }
-
         [JsonPropertyName("callback")]
         public AsaasCallback Callback { get; set; }
     }
@@ -69,27 +66,6 @@ namespace ImobAPI.Integrations.Asaas.Models
 
         [JsonPropertyName("type")]
         public string Type { get; set; }
-    }
-
-    public class AsaasSplit
-    {
-        [JsonPropertyName("walletId")]
-        public string WalletId { get; set; }
-
-        [JsonPropertyName("fixedValue")]
-        public double? FixedValue { get; set; }
-
-        [JsonPropertyName("percentualValue")]
-        public double? PercentualValue { get; set; }
-
-        [JsonPropertyName("totalFixedValue")]
-        public double? TotalFixedValue { get; set; }
-
-        [JsonPropertyName("externalReference")]
-        public string ExternalReference { get; set; }
-
-        [JsonPropertyName("description")]
-        public string Description { get; set; }
     }
 
     public class AsaasCallback

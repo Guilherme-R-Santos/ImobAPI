@@ -66,7 +66,41 @@ namespace ImobAPI.Integrations.Asaas
                 return false;
             }
 
-            if (!evento.Tipo.StartsWith("PAYMENT_", StringComparison.Ordinal))
+            if (evento.Tipo.StartsWith("TRANSFER_", StringComparison.Ordinal))
+            {
+                var request = JsonSerializer.Deserialize<AsaasWebhookRequest>(evento.Payload)
+                    ?? throw new InvalidOperationException("Payload de transferência inválido.");
+                var transfer = request.Transfer ?? throw new InvalidOperationException("Evento sem transferência.");
+                var repasse = await context.Repasses.FirstOrDefaultAsync(r => r.IdTransferenciaAsaas == transfer.Id ||
+                    (transfer.ExternalReference != null && r.ReferenciaExterna == transfer.ExternalReference), cancellationToken);
+                if (repasse == null)
+                {
+                    evento.ProximaTentativaEmUtc = agora.AddMinutes(1);
+                    await context.SaveChangesAsync(cancellationToken);
+                    await transaction.CommitAsync(cancellationToken);
+                    _logger.LogWarning("Transferência {Id} ainda não associada a um repasse; concilie no Asaas se necessário.", transfer.Id);
+                    return true;
+                }
+                if (repasse.IdTransferenciaAsaas != null && repasse.IdTransferenciaAsaas != transfer.Id)
+                    throw new InvalidOperationException("ID da transferência não corresponde ao repasse.");
+                repasse.IdTransferenciaAsaas = transfer.Id;
+                if (repasse.Status != "DONE" && repasse.Status != "FAILED" && repasse.Status != "CANCELLED")
+                    repasse.Status = request.Event switch
+                    {
+                        "TRANSFER_CREATED" => transfer.Status ?? "PENDING",
+                        "TRANSFER_PENDING" => "PENDING",
+                        "TRANSFER_IN_BANK_PROCESSING" => "BANK_PROCESSING",
+                        "TRANSFER_BLOCKED" => "BLOCKED",
+                        "TRANSFER_DONE" => "DONE",
+                        "TRANSFER_FAILED" => "FAILED",
+                        "TRANSFER_CANCELLED" => "CANCELLED",
+                        _ => repasse.Status
+                    };
+                repasse.Erro = transfer.FailReason;
+                repasse.ComprovanteUrl = transfer.TransactionReceiptUrl ?? repasse.ComprovanteUrl;
+                repasse.AtualizadoEmUtc = DateTime.UtcNow;
+            }
+            else if (!evento.Tipo.StartsWith("PAYMENT_", StringComparison.Ordinal))
             {
                 _logger.LogInformation("Evento Asaas ignorado: {Tipo}, ID {IdEvento}.", evento.Tipo, evento.IdEventoAsaas);
             }
@@ -85,6 +119,14 @@ namespace ImobAPI.Integrations.Asaas
                 var request = JsonSerializer.Deserialize<AsaasWebhookRequest>(evento.Payload)
                     ?? throw new InvalidOperationException($"Payload inválido no evento Asaas {evento.IdEventoAsaas}.");
                 AtualizarCobranca(cobranca, request);
+                if (request.Event == "PAYMENT_RECEIVED" && request.Payment?.Status == "RECEIVED" && cobranca.Ativo && cobranca.RepasseAutomatico &&
+                    !await context.Repasses.AnyAsync(r => context.Cobrancas.Any(c => c.Id == r.CobrancaId && c.IdCobrancaAsaas == cobranca.IdCobrancaAsaas), cancellationToken))
+                {
+                    var liquido = request.Payment.NetValue;
+                    var erro = liquido.HasValue ? RepasseService.ValidarValores(cobranca.ContaRepasse1, cobranca.ContaRepasse2, liquido.Value, out _, out _) : "Valor líquido ausente no webhook.";
+                    if (erro != null) _logger.LogError("Repasse automático não criado para cobrança {Id}: {Erro}", cobranca.Id, erro);
+                    else scope.ServiceProvider.GetRequiredService<RepasseService>().Reservar(cobranca, cobranca.ContaRepasse1, cobranca.ContaRepasse2, liquido.Value, "AUTOMATICO", null);
+                }
             }
 
             evento.ProcessadoEmUtc = DateTime.UtcNow;
@@ -102,7 +144,7 @@ namespace ImobAPI.Integrations.Asaas
             cobranca.NossoNumero = payment.NossoNumero ?? cobranca.NossoNumero;
             if (payment.NetValue.HasValue)
             {
-                cobranca.valorLiquido = payment.NetValue.Value;
+                cobranca.valorLiquido = (double)payment.NetValue.Value;
             }
 
             if (request.Event == "PAYMENT_CONFIRMED" || request.Event == "PAYMENT_RECEIVED")

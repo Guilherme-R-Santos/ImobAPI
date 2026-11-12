@@ -251,6 +251,16 @@ builder.Services.AddHttpClient<IAsaasService, AsaasService>(client =>
     client.DefaultRequestHeaders.Add("User-Agent", "ImobAPI");
 });
 
+builder.Services.AddHttpClient<ImobAPI.Integrations.Autentique.AutentiqueService>();
+builder.Services.AddHttpClient("AsaasRepasse", client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["Asaas:BaseUrl"]!.TrimEnd('/') + "/");
+    client.DefaultRequestHeaders.Add("access_token", builder.Configuration["Asaas:ApiKey"]);
+    client.DefaultRequestHeaders.Add("User-Agent", "ImobAPI");
+}).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false });
+builder.Services.AddScoped<RepasseService>();
+builder.Services.AddHostedService<RepasseWorker>();
+
 builder.Services.AddHostedService<AsaasWebhookProcessor>();
 builder.Services.Configure<EmailCobrancaOptions>(builder.Configuration.GetSection("EmailCobranca"));
 builder.Services.AddScoped<IEmailCobrancaSender, GmailCobrancaSender>();
@@ -258,6 +268,8 @@ builder.Services.AddScoped<CobrancaEmailJobRunner>();
 builder.Services.AddHostedService<CobrancaMensalEmailJob>();
 builder.Services.AddHostedService<CobrancaVencimentoEmailJob>();
 
+builder.Services.AddHttpContextAccessor();
+builder.Services.ConfigureOptions<RepasseJsonOptions>();
 builder.Services.AddControllers();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>

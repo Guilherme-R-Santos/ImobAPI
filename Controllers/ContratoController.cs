@@ -57,6 +57,13 @@ namespace ImobAPI.Controllers
         [HttpPost("Criar")]
         public async Task<IActionResult> Create(Entities.Contrato contrato)
         {
+            if ((contrato.RepasseAutomatico || contrato.ContaRepasse1 != null || contrato.ContaRepasse2 != null) && !ImobAPI.Integrations.Asaas.RepasseConfiguracao.Administrador(_context, User)) return Forbid();
+            if (contrato.RepasseAutomatico && contrato.ContaRepasse1 == null && contrato.ContaRepasse2 == null) return BadRequest("Informe ao menos um destinatário para o repasse automático.");
+            var erroRepasse = ImobAPI.Integrations.Asaas.RepasseConfiguracao.ValidarContas(contrato.ContaRepasse1, contrato.ContaRepasse2);
+            if (erroRepasse != null) return BadRequest(erroRepasse);
+            if (!TestemunhasValidas(contrato)) return BadRequest("Informe e-mails válidos e distintos para as testemunhas.");
+            contrato.IdDocumentoAutentique = null;
+            contrato.EnvioAutentiqueEmAndamento = false;
             contrato.Cadastrador = _context.Usuarios.Find(contrato.Cadastrador.Id) ?? throw new Exception("Usuário cadastrador não encontrado");
             contrato.TipoContrato = _context.TiposContrato.Find(contrato.TipoContrato.Id) ?? throw new Exception("Tipo de contrato não encontrado");
             contrato.Proprietario = _context.Clientes.Find(contrato.Proprietario.Id) ?? throw new Exception("Proprietário não encontrado");
@@ -101,6 +108,40 @@ namespace ImobAPI.Controllers
             }
             return Ok(existingContrato);
         }
+
+        [HttpGet("DadosProprietarioParaRepasse/{id}")]
+        public IActionResult DadosProprietarioParaRepasse(int id)
+        {
+            if (!ImobAPI.Integrations.Asaas.RepasseConfiguracao.Administrador(_context, User)) return Forbid();
+            var contrato = _context.Contratos.Include(c => c.Proprietario).FirstOrDefault(c => c.Id == id && c.Ativo);
+            if (contrato == null) return NotFound("Contrato não encontrado.");
+            if (contrato.Proprietario == null) return BadRequest("Contrato sem proprietário cadastrado.");
+            return Ok(DadosParaRepasse(contrato.Proprietario));
+        }
+
+        [HttpGet("DadosClienteParaRepasse/{id}")]
+        public IActionResult DadosClienteParaRepasse(int id)
+        {
+            if (!ImobAPI.Integrations.Asaas.RepasseConfiguracao.Administrador(_context, User)) return Forbid();
+            var cliente = _context.Clientes.AsNoTracking().FirstOrDefault(c => c.Id == id && c.Ativo);
+            if (cliente == null) return NotFound("Cliente não encontrado.");
+            return Ok(DadosParaRepasse(cliente));
+        }
+
+        private static Entities.ContaRepasse DadosParaRepasse(Entities.Cliente cliente)
+        {
+            return new Entities.ContaRepasse
+            {
+                NomeTitular = cliente.Nome,
+                CpfCnpjTitular = cliente.CpfCnpj,
+                DataNascimentoTitular = cliente.DataNascimento,
+                ChavePix = cliente.ChavePix,
+                CodigoBanco = cliente.CodBanco,
+                Agencia = cliente.Agencia,
+                Conta = cliente.Conta
+            };
+        }
+
         [HttpGet("ObterPorProprietario/{proprietarioId}")]
         public IActionResult GetByProprietario(int proprietarioId)
         {
@@ -142,6 +183,15 @@ namespace ImobAPI.Controllers
             {
                 return NotFound("Contrato não encontrado.");
             }
+            if ((contrato.RepasseAutomatico || contrato.ContaRepasse1 != null || contrato.ContaRepasse2 != null || existingContrato.ContaRepasse1 != null || existingContrato.ContaRepasse2 != null) && !ImobAPI.Integrations.Asaas.RepasseConfiguracao.Administrador(_context, User)) return Forbid();
+            if (contrato.RepasseAutomatico && contrato.ContaRepasse1 == null && contrato.ContaRepasse2 == null) return BadRequest("Informe ao menos um destinatário para o repasse automático.");
+            var erroRepasse = ImobAPI.Integrations.Asaas.RepasseConfiguracao.ValidarContas(contrato.ContaRepasse1, contrato.ContaRepasse2);
+            if (erroRepasse != null) return BadRequest(erroRepasse);
+            if (!TestemunhasValidas(contrato)) return BadRequest("Informe e-mails válidos e distintos para as testemunhas.");
+            if (existingContrato.EnvioAutentiqueEmAndamento) return Conflict("Há um envio à Autentique em andamento ou pendente de conciliação.");
+            existingContrato.Testemunha1 = contrato.Testemunha1;
+            existingContrato.Testemunha2 = contrato.Testemunha2;
+            existingContrato.Testemunha3 = contrato.Testemunha3;
             existingContrato.TipoContrato = _context.TiposContrato.Find(contrato.TipoContrato.Id) ?? throw new Exception("Tipo de contrato não encontrado");
             existingContrato.Proprietario = _context.Clientes.Find(contrato.Proprietario.Id) ?? throw new Exception("Proprietário não encontrado");
             existingContrato.Contratante1 = _context.Clientes.Find(contrato.Contratante1.Id) ?? throw new Exception("Contratante 1 não encontrado");
@@ -176,13 +226,26 @@ namespace ImobAPI.Controllers
             existingContrato.DataInicioVigencia = contrato.DataInicioVigencia;
             existingContrato.Nome = contrato.Nome;
             existingContrato.ValorContrato = contrato.ValorContrato;
-            existingContrato.PartilhaAutomatica = contrato.PartilhaAutomatica;
-            existingContrato.ContaPartilha = contrato.ContaPartilha;
+            existingContrato.RepasseAutomatico = contrato.RepasseAutomatico;
+            existingContrato.ContaRepasse1 = contrato.ContaRepasse1;
+            existingContrato.ContaRepasse2 = contrato.ContaRepasse2;
             existingContrato.DataAtualizacao = DateTime.Now;
             _context.SaveChanges();
             var cobrancaController = new CobrancaController(_context, _asaasService);
             await cobrancaController.GerarCobrancasDoContratoAsync(existingContrato.Id);
             return Ok(existingContrato);
+        }
+
+        private static bool TestemunhasValidas(Entities.Contrato contrato)
+        {
+            var emails = new[] { contrato.Testemunha1, contrato.Testemunha2, contrato.Testemunha3 }
+                .Where(e => !string.IsNullOrWhiteSpace(e)).Select(e => e.Trim()).ToArray();
+            if (emails.Any(e => e.Length > 255 || !new System.ComponentModel.DataAnnotations.EmailAddressAttribute().IsValid(e)) ||
+                emails.Distinct(StringComparer.OrdinalIgnoreCase).Count() != emails.Length) return false;
+            contrato.Testemunha1 = string.IsNullOrWhiteSpace(contrato.Testemunha1) ? null : contrato.Testemunha1.Trim();
+            contrato.Testemunha2 = string.IsNullOrWhiteSpace(contrato.Testemunha2) ? null : contrato.Testemunha2.Trim();
+            contrato.Testemunha3 = string.IsNullOrWhiteSpace(contrato.Testemunha3) ? null : contrato.Testemunha3.Trim();
+            return true;
         }
     }
 }

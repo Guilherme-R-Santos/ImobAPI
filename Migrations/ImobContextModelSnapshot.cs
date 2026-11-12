@@ -140,9 +140,6 @@ namespace ImobAPI.Migrations
                     b.Property<bool>("ComprovanteEnviado")
                         .HasColumnType("bit");
 
-                    b.Property<int>("ContaPartilha")
-                        .HasColumnType("int");
-
                     b.Property<int?>("ContratoId")
                         .HasColumnType("int");
 
@@ -176,7 +173,7 @@ namespace ImobAPI.Migrations
                     b.Property<bool>("Pago")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("PartilhaAutomatica")
+                    b.Property<bool>("RepasseAutomatico")
                         .HasColumnType("bit");
 
                     b.Property<bool>("SincronizadoAsaas")
@@ -225,9 +222,6 @@ namespace ImobAPI.Migrations
                     b.Property<int?>("CadastradorId")
                         .HasColumnType("int");
 
-                    b.Property<int>("ContaPartilha")
-                        .HasColumnType("int");
-
                     b.Property<int?>("Contratante1Id")
                         .HasColumnType("int");
 
@@ -255,11 +249,20 @@ namespace ImobAPI.Migrations
                     b.Property<DateTime?>("DataInicioVigencia")
                         .HasColumnType("datetime2");
 
+                    b.Property<bool>("EnvioAutentiqueEmAndamento")
+                        .IsConcurrencyToken()
+                        .HasColumnType("bit");
+
                     b.Property<int?>("Fiador2Id")
                         .HasColumnType("int");
 
                     b.Property<int?>("FiadorId")
                         .HasColumnType("int");
+
+                    b.Property<string>("IdDocumentoAutentique")
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)")
+                        .UseCollation("Latin1_General_100_BIN2");
 
                     b.Property<int?>("ImovelId")
                         .HasColumnType("int");
@@ -273,9 +276,6 @@ namespace ImobAPI.Migrations
                     b.Property<int?>("ObjetoContratoId")
                         .HasColumnType("int");
 
-                    b.Property<bool>("PartilhaAutomatica")
-                        .HasColumnType("bit");
-
                     b.Property<int>("PrazoMeses")
                         .HasColumnType("int");
 
@@ -284,6 +284,21 @@ namespace ImobAPI.Migrations
 
                     b.Property<int?>("ProprietarioId")
                         .HasColumnType("int");
+
+                    b.Property<bool>("RepasseAutomatico")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Testemunha1")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("Testemunha2")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("Testemunha3")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
 
                     b.Property<int?>("TipoContratoId")
                         .HasColumnType("int");
@@ -320,7 +335,44 @@ namespace ImobAPI.Migrations
 
                     b.HasIndex("TipoContratoId");
 
+                    b.HasIndex("Id", "IdDocumentoAutentique");
+
                     b.ToTable("Contratos");
+                });
+
+            modelBuilder.Entity("ImobAPI.Entities.DocumentoAutentique", b =>
+                {
+                    b.Property<string>("IdDocumentoAutentique")
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)")
+                        .UseCollation("Latin1_General_100_BIN2");
+
+                    b.Property<DateTimeOffset?>("ConcluidoEmUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("ContratoId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset?>("CriadoEmUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Nome")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<bool>("Sandbox")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Status")
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<DateTimeOffset?>("UltimaSincronizacaoEmUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("IdDocumentoAutentique");
+
+                    b.ToTable("DocumentosAutentique");
                 });
 
             modelBuilder.Entity("ImobAPI.Entities.EnvioCobrancaEmail", b =>
@@ -716,6 +768,138 @@ namespace ImobAPI.Migrations
                     b.ToTable("ObjetosContrato");
                 });
 
+            modelBuilder.Entity("ImobAPI.Entities.Repasse", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime>("AtualizadoEmUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CobrancaId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ComprovanteUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CriadoEmUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DadosDestino")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Destinatario")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Erro")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("IdTransferenciaAsaas")
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<string>("Origem")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ReferenciaExterna")
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<int?>("SolicitanteId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Status")
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.Property<decimal>("Valor")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IdTransferenciaAsaas")
+                        .IsUnique()
+                        .HasFilter("[IdTransferenciaAsaas] IS NOT NULL");
+
+                    b.HasIndex("ReferenciaExterna")
+                        .IsUnique()
+                        .HasFilter("[ReferenciaExterna] IS NOT NULL");
+
+                    b.HasIndex("CobrancaId", "Destinatario")
+                        .IsUnique();
+
+                    b.ToTable("Repasses");
+                });
+
+            modelBuilder.Entity("ImobAPI.Entities.SignatarioAutentique", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Acao")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<DateTimeOffset?>("AssinadoEmUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int?>("ClienteId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset?>("CriadoEmUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("IdDocumentoAutentique")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)")
+                        .UseCollation("Latin1_General_100_BIN2");
+
+                    b.Property<string>("Nome")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("PublicIdAutentique")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)")
+                        .UseCollation("Latin1_General_100_BIN2");
+
+                    b.Property<DateTimeOffset?>("RecusadoEmUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Status")
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<string>("Telefone")
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<DateTimeOffset?>("VisualizadoEmUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClienteId");
+
+                    b.HasIndex("IdDocumentoAutentique", "PublicIdAutentique")
+                        .IsUnique();
+
+                    b.ToTable("SignatariosAutentique");
+                });
+
             modelBuilder.Entity("ImobAPI.Entities.TipoCliente", b =>
                 {
                     b.Property<int>("Id")
@@ -1032,7 +1216,117 @@ namespace ImobAPI.Migrations
                         .WithMany()
                         .HasForeignKey("TipoCobrancaId");
 
+                    b.OwnsOne("ImobAPI.Entities.ContaRepasse", "ContaRepasse1", b1 =>
+                        {
+                            b1.Property<int>("CobrancaId")
+                                .HasColumnType("int");
+
+                            b1.Property<string>("Agencia")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("ChavePix")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("CodigoBanco")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("Conta")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("CpfCnpjTitular")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<DateTime?>("DataNascimentoTitular")
+                                .HasColumnType("datetime2");
+
+                            b1.Property<string>("DigitoConta")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("Modalidade")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("NomeTitular")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("TipoChavePix")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("TipoConta")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("TipoValor")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<decimal>("Valor")
+                                .HasPrecision(18, 4)
+                                .HasColumnType("decimal(18,4)");
+
+                            b1.HasKey("CobrancaId");
+
+                            b1.ToTable("Cobrancas");
+
+                            b1.WithOwner()
+                                .HasForeignKey("CobrancaId");
+                        });
+
+                    b.OwnsOne("ImobAPI.Entities.ContaRepasse", "ContaRepasse2", b1 =>
+                        {
+                            b1.Property<int>("CobrancaId")
+                                .HasColumnType("int");
+
+                            b1.Property<string>("Agencia")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("ChavePix")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("CodigoBanco")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("Conta")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("CpfCnpjTitular")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<DateTime?>("DataNascimentoTitular")
+                                .HasColumnType("datetime2");
+
+                            b1.Property<string>("DigitoConta")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("Modalidade")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("NomeTitular")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("TipoChavePix")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("TipoConta")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("TipoValor")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<decimal>("Valor")
+                                .HasPrecision(18, 4)
+                                .HasColumnType("decimal(18,4)");
+
+                            b1.HasKey("CobrancaId");
+
+                            b1.ToTable("Cobrancas");
+
+                            b1.WithOwner()
+                                .HasForeignKey("CobrancaId");
+                        });
+
                     b.Navigation("Cadastrador");
+
+                    b.Navigation("ContaRepasse1");
+
+                    b.Navigation("ContaRepasse2");
 
                     b.Navigation("Contrato");
 
@@ -1089,7 +1383,123 @@ namespace ImobAPI.Migrations
                         .WithMany()
                         .HasForeignKey("TipoContratoId");
 
+                    b.HasOne("ImobAPI.Entities.DocumentoAutentique", null)
+                        .WithMany()
+                        .HasForeignKey("Id", "IdDocumentoAutentique")
+                        .HasPrincipalKey("ContratoId", "IdDocumentoAutentique")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.OwnsOne("ImobAPI.Entities.ContaRepasse", "ContaRepasse1", b1 =>
+                        {
+                            b1.Property<int>("ContratoId")
+                                .HasColumnType("int");
+
+                            b1.Property<string>("Agencia")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("ChavePix")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("CodigoBanco")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("Conta")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("CpfCnpjTitular")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<DateTime?>("DataNascimentoTitular")
+                                .HasColumnType("datetime2");
+
+                            b1.Property<string>("DigitoConta")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("Modalidade")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("NomeTitular")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("TipoChavePix")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("TipoConta")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("TipoValor")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<decimal>("Valor")
+                                .HasPrecision(18, 4)
+                                .HasColumnType("decimal(18,4)");
+
+                            b1.HasKey("ContratoId");
+
+                            b1.ToTable("Contratos");
+
+                            b1.WithOwner()
+                                .HasForeignKey("ContratoId");
+                        });
+
+                    b.OwnsOne("ImobAPI.Entities.ContaRepasse", "ContaRepasse2", b1 =>
+                        {
+                            b1.Property<int>("ContratoId")
+                                .HasColumnType("int");
+
+                            b1.Property<string>("Agencia")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("ChavePix")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("CodigoBanco")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("Conta")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("CpfCnpjTitular")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<DateTime?>("DataNascimentoTitular")
+                                .HasColumnType("datetime2");
+
+                            b1.Property<string>("DigitoConta")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("Modalidade")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("NomeTitular")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("TipoChavePix")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("TipoConta")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("TipoValor")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<decimal>("Valor")
+                                .HasPrecision(18, 4)
+                                .HasColumnType("decimal(18,4)");
+
+                            b1.HasKey("ContratoId");
+
+                            b1.ToTable("Contratos");
+
+                            b1.WithOwner()
+                                .HasForeignKey("ContratoId");
+                        });
+
                     b.Navigation("Cadastrador");
+
+                    b.Navigation("ContaRepasse1");
+
+                    b.Navigation("ContaRepasse2");
 
                     b.Navigation("Contratante1");
 
@@ -1112,6 +1522,15 @@ namespace ImobAPI.Migrations
                     b.Navigation("Proprietario");
 
                     b.Navigation("TipoContrato");
+                });
+
+            modelBuilder.Entity("ImobAPI.Entities.DocumentoAutentique", b =>
+                {
+                    b.HasOne("ImobAPI.Entities.Contrato", null)
+                        .WithMany()
+                        .HasForeignKey("ContratoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("ImobAPI.Entities.Finalidade", b =>
@@ -1210,6 +1629,29 @@ namespace ImobAPI.Migrations
                     b.Navigation("Cadastrador");
                 });
 
+            modelBuilder.Entity("ImobAPI.Entities.Repasse", b =>
+                {
+                    b.HasOne("ImobAPI.Entities.Cobranca", null)
+                        .WithMany()
+                        .HasForeignKey("CobrancaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ImobAPI.Entities.SignatarioAutentique", b =>
+                {
+                    b.HasOne("ImobAPI.Entities.Cliente", null)
+                        .WithMany()
+                        .HasForeignKey("ClienteId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("ImobAPI.Entities.DocumentoAutentique", null)
+                        .WithMany("Signatarios")
+                        .HasForeignKey("IdDocumentoAutentique")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("ImobAPI.Entities.TipoCliente", b =>
                 {
                     b.HasOne("ImobAPI.Entities.Usuario", "Cadastrador")
@@ -1283,6 +1725,11 @@ namespace ImobAPI.Migrations
                     b.Navigation("Contrato");
 
                     b.Navigation("Imovel");
+                });
+
+            modelBuilder.Entity("ImobAPI.Entities.DocumentoAutentique", b =>
+                {
+                    b.Navigation("Signatarios");
                 });
 #pragma warning restore 612, 618
         }

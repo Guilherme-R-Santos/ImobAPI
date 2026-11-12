@@ -4,10 +4,16 @@
     {
         public int Id { get; set; }
         public string Nome { get; set; }
+        public string IdDocumentoAutentique { get; set; }
+        public bool EnvioAutentiqueEmAndamento { get; set; }
+        public string Testemunha1 { get; set; }
+        public string Testemunha2 { get; set; }
+        public string Testemunha3 { get; set; }
         public bool Ativo { get; set; }
         public decimal ValorContrato { get; set; }
-        public bool PartilhaAutomatica { get; set; }
-        public int ContaPartilha { get; set; }
+        public bool RepasseAutomatico { get; set; }
+        public ContaRepasse ContaRepasse1 { get; set; }
+        public ContaRepasse ContaRepasse2 { get; set; }
         public Usuario Cadastrador { get; set; }
         public TipoContrato TipoContrato { get; set; }
         public Cliente Proprietario { get; set; }

@@ -26,6 +26,11 @@ namespace ImobAPI.Controllers
             foto.TipoFoto = _context.TiposFoto.Find(foto.TipoFoto.Id);
             if (foto.TipoFoto == null)
                 return BadRequest("Tipo de foto não encontrado");
+            if (foto.Vistoria != null)
+            {
+                foto.Vistoria = _context.Vistorias.Find(foto.Vistoria.Id);
+                if (foto.Vistoria == null) return BadRequest("Vistoria não encontrada");
+            }
             _context.Fotos.Add(foto);
             _context.SaveChanges();
             return Ok(foto);

@@ -15,6 +15,19 @@ namespace ImobAPI.Integrations.Asaas.Models
 
         [JsonPropertyName("payment")]
         public AsaasWebhookPayment Payment { get; set; }
+
+        [JsonPropertyName("transfer")]
+        public AsaasWebhookTransfer Transfer { get; set; }
+    }
+
+    public class AsaasWebhookTransfer
+    {
+        [JsonPropertyName("id")] public string Id { get; set; }
+        [JsonPropertyName("status")] public string Status { get; set; }
+        [JsonPropertyName("value")] public decimal? Value { get; set; }
+        [JsonPropertyName("externalReference")] public string ExternalReference { get; set; }
+        [JsonPropertyName("failReason")] public string FailReason { get; set; }
+        [JsonPropertyName("transactionReceiptUrl")] public string TransactionReceiptUrl { get; set; }
     }
 
     public class AsaasWebhookPayment
@@ -29,7 +42,7 @@ namespace ImobAPI.Integrations.Asaas.Models
         public double? Value { get; set; }
 
         [JsonPropertyName("netValue")]
-        public double? NetValue { get; set; }
+        public decimal? NetValue { get; set; }
 
         [JsonPropertyName("nossoNumero")]
         public string NossoNumero { get; set; }

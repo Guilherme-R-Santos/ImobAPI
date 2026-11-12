@@ -49,7 +49,9 @@ namespace ImobAPI.Controllers
 
             if (webhookRequest == null || string.IsNullOrWhiteSpace(webhookRequest.Id) || webhookRequest.Id.Length > 256 ||
                 string.IsNullOrWhiteSpace(webhookRequest.Event) || webhookRequest.Event.Length > 128 ||
-                webhookRequest.Payment?.Id?.Length > 128 ||
+                webhookRequest.Payment?.Id?.Length > 128 || webhookRequest.Transfer?.Id?.Length > 128 ||
+                webhookRequest.Transfer?.ExternalReference?.Length > 128 ||
+                (webhookRequest.Event.StartsWith("TRANSFER_", StringComparison.Ordinal) && string.IsNullOrWhiteSpace(webhookRequest.Transfer?.Id)) ||
                 (webhookRequest.Event.StartsWith("PAYMENT_", StringComparison.Ordinal) &&
                  string.IsNullOrWhiteSpace(webhookRequest.Payment?.Id)))
             {

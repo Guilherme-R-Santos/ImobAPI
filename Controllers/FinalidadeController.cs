@@ -84,6 +84,11 @@ public class FinalidadeController : ControllerBase
     [HttpPost("Criar")]
     public async Task<ActionResult<Finalidade>> PostFinalidade(Finalidade finalidade)
     {
+        if (finalidade.Cadastrador != null)
+        {
+            finalidade.Cadastrador = await _context.Usuarios.FindAsync(finalidade.Cadastrador.Id);
+            if (finalidade.Cadastrador == null) return BadRequest("Usuário cadastrador não encontrado.");
+        }
         _context.Finalidades.Add(finalidade);
         await _context.SaveChangesAsync();
 

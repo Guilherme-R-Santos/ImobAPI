@@ -202,6 +202,33 @@ dotnet build
 dotnet run
 ```
 
+### Assinatura de documentos pela Autentique
+
+Em desenvolvimento, preencha `Autentique:ApiKey` no `appsettings.Development.json` local. Esse arquivo é carregado no ambiente `Development`; não inclua a chave no repositório. A variável de ambiente `Autentique__ApiKey`, se definida, tem prioridade sobre o arquivo. Em outros ambientes, configure a chave usando um provedor seguro. `Autentique:Sandbox` é `true` por padrão; defina explicitamente como `false` apenas para criar documentos reais, que podem consumir créditos. Documentos sandbox são temporários e podem ser apagados após alguns dias.
+
+Aplique a migração EF antes de usar a integração. No cadastro ou atualização de contrato, `testemunha1`, `testemunha2` e `testemunha3` são e-mails opcionais e distintos. Ao enviar o contrato, eles são incluídos automaticamente com a ação `SIGN_AS_A_WITNESS`; não os repita na lista de signatários. E-mail é suficiente para solicitar a assinatura por esse canal; a Autentique pode solicitar dados adicionais durante a assinatura.
+
+A rota autenticada `POST /Autentique/CriarDocumento` recebe JSON com `contratoId` (contrato ativo já cadastrado), `nome`, `arquivo` (PDF em Base64, até 20 MiB) e `signatarios`. O limite da Autentique depende do plano: a documentação informa 5 MB no gratuito e 20 MB no profissional. Exemplo:
+
+```json
+{
+  "contratoId": 123,
+  "nome": "Contrato de locação",
+  "arquivo": "<PDF_EM_BASE64>",
+  "signatarios": [
+    { "email": "locatario@example.com", "acao": "SIGN" },
+    { "nome": "Proprietário", "acao": "SIGN" },
+    { "telefone": "+5521999999999", "metodoEntrega": "DELIVERY_METHOD_WHATSAPP", "acao": "SIGN" }
+  ]
+}
+```
+
+Informe exatamente um de `email`, `nome` ou `telefone` por signatário. Por telefone, `metodoEntrega` deve ser `DELIVERY_METHOD_SMS` ou `DELIVERY_METHOD_WHATSAPP`. Quando não informada, `acao` é `SIGN`. Para signatário por nome, utilize o link retornado para encaminhá-lo; links não são persistidos.
+
+A resposta contém `sandbox` e `documento` com os dados retornados pela Autentique. O documento e suas assinaturas são registrados no banco e `Contratos.IdDocumentoAutentique` aponta para o documento atual. Consulte os registros pela rota autenticada `GET /Autentique/DocumentosDoContrato/{contratoId}`. Campos de status, datas de assinatura e cliente permanecem vazios até existir uma sincronização que os preencha; esta implementação não inclui webhook ou consulta de andamento. Telefones não são retornados na seleção GraphQL atual e não são gravados.
+
+A API bloqueia novas criações para um contrato com documento vinculado ou envio pendente. Se ocorrer falha após reservar o envio, `EnvioAutentiqueEmAndamento` permanece `true`: consulte a Autentique e os logs, pois o documento pode ter sido criado. Concilie manualmente o documento e os signatários antes de liberar o bloqueio; não faça retentativa automática. Uma falha de persistência retorna o ID externo quando conhecido. Envio por SMS ou WhatsApp pode consumir créditos.
+
 ### Notificações de cobranças Asaas
 
 A integração envia `notificationDisabled: true` ao criar ou atualizar clientes no Asaas. Para clientes já existentes, ela também desativa as notificações ao vinculá-los e antes de criar ou atualizar cobranças; se essa desativação falhar, a operação de cobrança não é enviada ao Asaas e a falha de sincronização é informada. Essa configuração é do cliente e desativa suas notificações de cobrança em todos os canais, inclusive para cobranças existentes, não apenas para a cobrança criada. Clientes existentes ainda não processados pela integração não são alterados em massa.
@@ -227,7 +254,47 @@ Uma tentativa é reservada no banco por cobrança, job e período antes de envia
 
 O endpoint grava o evento antes de retornar `200`, sem guardar campos adicionais como dados de cartão. O ID do evento é único, portanto reenvios não repetem o processamento. Um serviço em segundo plano atualiza a cobrança por `IdCobrancaAsaas`: status e dados disponíveis; pagamento e data nos eventos de confirmação/recebimento; estorno integral ou recebimento em dinheiro desfeito; e inativação/restauração nos respectivos eventos. Estorno parcial não é tratado como estorno integral. Os eventos para uma mesma cobrança são processados na ordem de recebimento; eventos de cobrança ainda não cadastrada são mantidos pendentes e retentados a cada minuto. A aplicação deve permanecer em execução para processar a fila; monitore os logs e os registros pendentes em `EventosWebhookAsaas`, especialmente quando uma cobrança não for encontrada. Falhas de banco impedem a confirmação ao Asaas ou mantêm o evento pendente para nova tentativa.
 
-A exclusão de cobrança não faz estorno e não cancela uma assinatura ou parcelamento. O webhook deve ser configurado para receber apenas eventos necessários; eventos de outros recursos são registrados e ignorados. Consulte a [documentação de webhooks de cobrança](https://docs.asaas.com/docs/webhook-para-cobrancas) e os logs do Asaas em caso de fila pausada.
+A exclusão de cobrança não faz estorno e não cancela uma assinatura ou parcelamento. Eventos `TRANSFER_*` também são usados para acompanhar repasses, conforme a seção abaixo; outros eventos são registrados e ignorados. Consulte a [documentação de webhooks de cobrança](https://docs.asaas.com/docs/webhook-para-cobrancas) e os logs do Asaas em caso de fila pausada.
+
+### Dados de repasse em desenvolvimento
+
+Contratos e cobranças contêm `repasseAutomatico`, `contaRepasse1` e `contaRepasse2`. Cada conta armazena `modalidade` (`PIX_CHAVE`, `PIX_CONTA` ou `TED`), `tipoValor` (`FIXO` ou `PERCENTUAL`), `valor` e dados do destinatário. Os valores fixos aceitam duas casas decimais; percentuais aceitam quatro casas, entre zero e 100, e a soma dos percentuais não pode exceder 100. Ao gerar cobranças, as contas são copiadas do contrato. Para pré-preencher a primeira conta, o administrador pode consultar `GET /Contrato/DadosClienteParaRepasse/{id}` com o ID do proprietário antes de criar o contrato, ou `GET /Contrato/DadosProprietarioParaRepasse/{id}` com o ID do contrato existente. Essas rotas fornecem somente os dados já cadastrados no cliente; é necessário completar os dados faltantes. Somente administradores podem informar ou alterar as contas.
+
+**Migração:** faça backup antes de aplicar as migrações. `ConfiguracaoRepasse` remove os valores antigos de `ContaPartilha` e redefine os indicadores para falso; configure novamente os destinatários e a autorização. `OperacoesRepasse` cria o registro das transferências. Os clientes da API precisam usar os novos nomes.
+
+#### Habilitação e funcionamento
+
+1. Aplique as migrações e configure `Asaas:ApiKey` e `Asaas:WebhookToken` por um provedor seguro. Se credenciais tiverem sido expostas em arquivos ou histórico, revogue-as e emita novas. A implementação só envia repasses ao sandbox, para `https://api-sandbox.asaas.com/v3` ou `https://sandbox.asaas.com/api/v3`.
+2. Configure `Asaas:RepassesHabilitados` como `true` (por exemplo, pela variável `Asaas__RepassesHabilitados`) e reinicie a aplicação. O padrão é `false`. O sandbox não elimina a necessidade de proteger o acesso: altere a senha padrão de administrador e não exponha o ambiente de desenvolvimento publicamente.
+3. No webhook configure envio sequencial dos eventos de cobrança, incluindo `PAYMENT_RECEIVED` e estornos, e dos eventos `TRANSFER_CREATED`, `TRANSFER_PENDING`, `TRANSFER_IN_BANK_PROCESSING`, `TRANSFER_BLOCKED`, `TRANSFER_DONE`, `TRANSFER_FAILED` e `TRANSFER_CANCELLED`. A aplicação precisa estar em execução para processar a fila.
+4. Para automatizar, um administrador configura `repasseAutomatico` e pelo menos uma conta na cobrança ou no contrato antes de gerar suas cobranças. Em `PAYMENT_RECEIVED`, com status `RECEIVED` e `netValue` válido, os destinos são reservados no banco e enviados separadamente. Dados inválidos ou líquido ausente são registrados no log e não geram transferência.
+
+Para repasse manual, um administrador envia `POST /Repasse/Manual` com o ID da cobrança e as contas. Exemplo para um destinatário Pix:
+
+```json
+{
+  "cobrancaId": 123,
+  "contaRepasse1": {
+    "modalidade": "PIX_CHAVE",
+    "tipoValor": "PERCENTUAL",
+    "valor": 80,
+    "tipoChavePix": "EMAIL",
+    "chavePix": "destinatario@example.com"
+  }
+}
+```
+
+Para conta bancária use `PIX_CONTA` ou `TED`, com `codigoBanco`, `nomeTitular`, `cpfCnpjTitular`, `agencia`, `conta`, `digitoConta` e `tipoConta` (`CONTA_CORRENTE` ou `CONTA_POUPANCA`). Informe `dataNascimentoTitular` quando exigida pelo Asaas. Para a segunda parte, inclua `contaRepasse2` no mesmo formato. As chaves CPF, CNPJ e telefone devem conter somente dígitos; EVP deve ser um UUID. A rota manual exige cobrança ativa e recebida e um webhook `PAYMENT_RECEIVED` processado com valor líquido. Ela retorna `202` após reservar, não após concluir a transferência.
+
+Percentuais são calculados sobre o líquido informado no webhook, arredondados para centavos; a soma dos valores fixos e calculados não pode superar esse líquido. A fila consulta o saldo antes do envio, mas saldo e taxas podem mudar entre operações; o Asaas pode rejeitar a solicitação. Cada cobrança Asaas admite uma única solicitação local, com até dois destinatários. O segundo envio pode falhar mesmo quando o primeiro já tiver sido realizado: não há transação atômica entre contas.
+
+#### Acompanhamento e conciliação
+
+`GET /Repasse/PorCobranca/{id}` mostra o ID local, referência externa, ID Asaas, status, erro e comprovante. `NA_FILA` aguarda envio; `ENVIANDO` indica envio iniciado; `INCERTO` indica que não foi possível determinar o resultado. O processamento posterior do Asaas é indicado por `PENDING`, `BANK_PROCESSING`, `BLOCKED`, `DONE`, `FAILED` ou `CANCELLED`. Uma confirmação HTTP de criação não significa conclusão. Webhooks sem associação são mantidos pendentes; monitore também os logs e `EventosWebhookAsaas`.
+
+Nenhum POST é automaticamente repetido depois de iniciado. Para `INCERTO` ou `ENVIANDO` interrompido, localize a transferência no Asaas e use `POST /Repasse/Conciliar/{id}` com `{ "idTransferenciaAsaas": "..." }`; a API consulta o Asaas e compara a referência e o valor antes de associá-la. A ausência de uma transferência em uma consulta não prova que o envio não ocorreu: investigue antes de qualquer novo envio. Para operações locais `BLOQUEADO` comprovadamente não enviadas, após corrigir saldo/configuração, um administrador pode usar `POST /Repasse/RetomarNaoEnviados/{cobrancaId}`. Rejeições e falhas do Asaas exigem análise; não são reenviadas automaticamente.
+
+Eventos de estorno ou contestação conhecidos antes do envio bloqueiam a transferência, inclusive se houver um novo evento de recebimento posterior; esses casos exigem análise manual. Um estorno pode chegar após o início do envio: transferências externas não são revertidas automaticamente. A atualização de contratos atualmente regenera cobranças e pode deixar cobranças antigas no Asaas; revise-as antes de ativar repasses. O seed cria um administrador com senha padrão e outras rotas existentes expõem dados de clientes; esta configuração é somente para desenvolvimento e deve passar por revisão de segurança antes de uso real.
 
 ### URLs padrão de desenvolvimento
 

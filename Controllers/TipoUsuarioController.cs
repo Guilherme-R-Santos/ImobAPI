@@ -23,6 +23,7 @@ namespace ImobAPI.Controllers
         [HttpPost("Criar")]
         public IActionResult Create(Entities.TipoUsuario tipoUsuario)
         {
+            if (!ImobAPI.Integrations.Asaas.RepasseConfiguracao.Administrador(_context, User)) return Forbid();
             tipoUsuario.DataCadastro = DateTime.Now;
             tipoUsuario.Ativo = true;
             _context.TiposUsuario.Add(tipoUsuario);
@@ -55,6 +56,7 @@ namespace ImobAPI.Controllers
         [HttpPut("Inativar/{id}")]
         public IActionResult Inactivate(int id)
         {
+            if (!ImobAPI.Integrations.Asaas.RepasseConfiguracao.Administrador(_context, User)) return Forbid();
             var existingTiposUsuario = _context.TiposUsuario.Find(id);
             if (existingTiposUsuario == null)
             {
@@ -69,6 +71,7 @@ namespace ImobAPI.Controllers
         [HttpPut("Atualizar/{id}")]
         public IActionResult Update(int id, Entities.TipoUsuario updatedTipoUsuario)
         {
+            if (!ImobAPI.Integrations.Asaas.RepasseConfiguracao.Administrador(_context, User)) return Forbid();
             var existingTipoUsuario = _context.TiposUsuario.Find(id);
             if (existingTipoUsuario == null)
             {
@@ -83,6 +86,7 @@ namespace ImobAPI.Controllers
         [HttpPut("Ativar/{id}")]
         public IActionResult Activate(int id)
         {
+            if (!ImobAPI.Integrations.Asaas.RepasseConfiguracao.Administrador(_context, User)) return Forbid();
             var existingTipoUsuario = _context.TiposUsuario.Find(id);
             if (existingTipoUsuario == null)
             {
