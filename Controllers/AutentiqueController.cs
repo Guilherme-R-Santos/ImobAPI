@@ -161,6 +161,60 @@ namespace ImobAPI.Controllers
             return Ok(documentos);
         }
 
+        [HttpGet("Contratos/{contratoId:int}/DocumentoAssinado")]
+        public async Task<IActionResult> BaixarDocumentoAssinado(int contratoId, [FromQuery] string tipo, CancellationToken cancellationToken)
+        {
+            if (tipo != null && !string.Equals(tipo, "assinado", StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(tipo, "original", StringComparison.OrdinalIgnoreCase))
+                return BadRequest(new { mensagem = "O tipo deve ser 'assinado' ou 'original'." });
+            var original = string.Equals(tipo, "original", StringComparison.OrdinalIgnoreCase);
+            var contrato = await _context.Contratos.AsNoTracking()
+                .Where(c => c.Id == contratoId)
+                .Select(c => new { c.IdDocumentoAutentique })
+                .SingleOrDefaultAsync(cancellationToken);
+            if (contrato == null)
+                return NotFound(new { mensagem = "Contrato não encontrado." });
+            if (string.IsNullOrWhiteSpace(contrato.IdDocumentoAutentique))
+                return NotFound(new { mensagem = "O contrato não possui documento vinculado à Autentique." });
+
+            string apiKey;
+            try
+            {
+                apiKey = _service.ObterConfiguracao().ApiKey;
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogError("Configuração da Autentique inválida: {Erro}", ex.Message);
+                return StatusCode(503, new { mensagem = "Integração Autentique não configurada corretamente." });
+            }
+
+            try
+            {
+                var pdf = await _service.BaixarDocumentoAsync(contrato.IdDocumentoAutentique, apiKey, original, cancellationToken);
+                Response.Headers.CacheControl = "no-store";
+                return File(pdf, "application/pdf", $"contrato-{contratoId}-{(original ? "original" : "assinado")}.pdf");
+            }
+            catch (DocumentoAutentiqueIndisponivelException ex)
+            {
+                return StatusCode(409, new { mensagem = ex.Message });
+            }
+            catch (AutentiqueIntegrationException ex)
+            {
+                _logger.LogWarning("Falha ao obter PDF da Autentique para o contrato {ContratoId}: {Erro}", contratoId, ex.Message);
+                return StatusCode(502, new { mensagem = ex.Message, detalhes = ex.Detalhes });
+            }
+            catch (HttpRequestException ex)
+            {
+                _logger.LogWarning("Falha de comunicação com a Autentique para o contrato {ContratoId}; status HTTP: {Status}.", contratoId, ex.StatusCode);
+                return StatusCode(502, new { mensagem = "Falha de comunicação ao obter o PDF da Autentique." });
+            }
+            catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+            {
+                _logger.LogWarning("Tempo limite ao obter PDF da Autentique para o contrato {ContratoId}.", contratoId);
+                return StatusCode(504, new { mensagem = "Tempo limite ao obter o PDF da Autentique." });
+            }
+        }
+
         private static DateTimeOffset? LerData(string valor)
         {
             if (string.IsNullOrWhiteSpace(valor)) return null;

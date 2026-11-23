@@ -252,6 +252,9 @@ builder.Services.AddHttpClient<IAsaasService, AsaasService>(client =>
 });
 
 builder.Services.AddHttpClient<ImobAPI.Integrations.Autentique.AutentiqueService>();
+builder.Services.AddHttpClient("AutentiqueDownload")
+    .RemoveAllLoggers()
+    .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false });
 builder.Services.AddHttpClient("AsaasRepasse", client =>
 {
     client.BaseAddress = new Uri(builder.Configuration["Asaas:BaseUrl"]!.TrimEnd('/') + "/");
