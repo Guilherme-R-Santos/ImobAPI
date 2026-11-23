@@ -446,6 +446,11 @@ Em `Development`, a documentação interativa fica disponível via Swagger UI.
 
 - `POST /TipoFoto/Criar`
 - `GET /TipoFoto/ObterTodos`
+- `GET /TipoFoto/ObterPorId/{id}`
+- `GET /TipoFoto/ObterPorNome/{nome}`
+- `PUT /TipoFoto/Atualizar/{id}`
+- `PUT /TipoFoto/Inativar/{id}`
+- `PUT /TipoFoto/Ativar/{id}`
 
 ### `FotoController`
 
